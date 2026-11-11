@@ -2,6 +2,89 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { submitWork, fetchProject } from '../api/services';
 
+const S = {
+  card: {
+    background: 'rgba(15,30,50,0.80)',
+    border: '1px solid rgba(148,163,184,0.10)',
+    borderRadius: '20px',
+    padding: '32px',
+  },
+  label: {
+    fontSize: '11px',
+    fontWeight: '700',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    fontFamily: 'monospace',
+    display: 'block',
+    marginBottom: '8px',
+  },
+  textarea: {
+    width: '100%',
+    padding: '12px 16px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    background: 'rgba(19,34,54,0.80)',
+    border: '1px solid rgba(148,163,184,0.14)',
+    color: '#f1f5f9',
+    outline: 'none',
+    resize: 'vertical',
+    minHeight: '110px',
+    fontFamily: 'Inter, sans-serif',
+  },
+  btn: {
+    background: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)',
+    color: '#07111f',
+    fontWeight: '800',
+    padding: '14px 24px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 6px 24px rgba(45,212,191,0.25)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    transition: 'all 0.15s ease',
+  },
+  btnOutline: {
+    background: 'rgba(19,34,54,0.60)',
+    border: '1px solid rgba(148,163,184,0.15)',
+    color: '#94a3b8',
+    fontWeight: '700',
+    padding: '13px 22px',
+    borderRadius: '12px',
+    fontSize: '13px',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  err: {
+    background: 'rgba(239,68,68,0.10)',
+    border: '1px solid rgba(239,68,68,0.20)',
+    color: '#f87171',
+    padding: '14px 16px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+  },
+  success: {
+    background: 'rgba(34,197,94,0.10)',
+    border: '1px solid rgba(34,197,94,0.20)',
+    color: '#4ade80',
+    padding: '14px 16px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+};
+
 export default function SubmitWork() {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -91,44 +174,44 @@ export default function SubmitWork() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 font-sans">
+    <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Link to={`/project/${projectId}`} className="text-xs font-mono text-muted-text hover:text-mint transition-colors">
+        <div className="flex items-center gap-2 mb-2 text-xs font-mono">
+          <Link to={`/project/${projectId}`} style={{ color: '#4e6580' }} className="hover:text-mint transition-colors">
             ← AGREEMENT SPACE
           </Link>
-          <span className="text-muted-text text-xs">/</span>
-          <span className="text-xs font-mono text-mint font-medium">SUBMIT DELIVERABLES</span>
+          <span style={{ color: '#4e6580' }}>/</span>
+          <span style={{ color: '#2dd4bf' }}>SUBMIT DELIVERABLES</span>
         </div>
-        <h1 className="text-2xl font-extrabold text-primary-text tracking-tight">
+        <h1 className="text-2xl font-black text-primary-text tracking-tight">
           Deliverable Evidence Submission
         </h1>
         {project && (
-          <p className="text-secondary-text text-sm mt-0.5">
+          <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>
             Agreement: <span className="text-primary-text font-bold">{project.title}</span>
           </p>
         )}
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5">
-          <span>⚠️</span>
+        <div style={S.err}>
+          <span>⚠</span>
           <span className="flex-1">{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="p-4 rounded-xl bg-mint/10 border border-mint/20 text-mint text-sm flex items-center gap-2.5">
+        <div style={S.success}>
           <span>✓</span>
           <span>Deliverables submitted! Redirecting to workspace for audit...</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="glass-card rounded-2xl p-8 space-y-6 border border-border-card">
+      <form onSubmit={handleSubmit} style={S.card} className="space-y-6">
         {/* Drag and Drop Area */}
         <div>
-          <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-2 font-mono">
+          <label style={S.label}>
             Evidence / Proof-of-Work File *
           </label>
 
@@ -137,43 +220,68 @@ export default function SubmitWork() {
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${
-              dragActive
-                ? 'border-mint bg-mint/10'
+            className="rounded-2xl p-8 text-center transition-all"
+            style={{
+              border: dragActive
+                ? '2px dashed #2dd4bf'
                 : file
-                ? 'border-mint/60 bg-surface/60'
-                : 'border-border-card bg-surface/30 hover:border-mint/40'
-            }`}
+                ? '2px dashed rgba(45,212,191,0.6)'
+                : '2px dashed rgba(148,163,184,0.18)',
+              background: dragActive
+                ? 'rgba(45,212,191,0.08)'
+                : file
+                ? 'rgba(19,34,54,0.7)'
+                : 'rgba(19,34,54,0.3)',
+            }}
           >
             {file ? (
-              <div className="flex items-center justify-between bg-card-bg p-4 rounded-xl border border-border-card max-w-md mx-auto">
+              <div
+                className="flex items-center justify-between p-4 rounded-xl max-w-md mx-auto"
+                style={{
+                  background: 'rgba(15,30,50,0.9)',
+                  border: '1px solid rgba(148,163,184,0.12)',
+                }}
+              >
                 <div className="flex items-center gap-3 truncate">
                   <span className="text-2xl">📄</span>
                   <div className="text-left truncate">
                     <div className="text-xs font-bold text-primary-text truncate font-mono">{file.name}</div>
-                    <div className="text-[11px] text-muted-text font-mono">{(file.size / 1024).toFixed(1)} KB</div>
+                    <div className="text-[11px] font-mono" style={{ color: '#4e6580' }}>
+                      {(file.size / 1024).toFixed(1)} KB
+                    </div>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setFile(null)}
-                  className="text-xs font-bold text-red-400 hover:text-red-300 px-3 py-1"
+                  className="text-xs font-bold px-3 py-1 hover:underline"
+                  style={{ color: '#f87171' }}
                 >
                   Remove
                 </button>
               </div>
             ) : (
               <div>
-                <div className="w-12 h-12 rounded-xl bg-surface border border-border-card flex items-center justify-center text-mint text-2xl mx-auto mb-3">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mx-auto mb-3"
+                  style={{
+                    background: 'rgba(45,212,191,0.12)',
+                    color: '#2dd4bf',
+                    border: '1px solid rgba(45,212,191,0.22)',
+                  }}
+                >
                   📤
                 </div>
                 <div className="text-sm font-bold text-primary-text mb-1">
                   Drag and drop archive or evidence file
                 </div>
-                <div className="text-xs text-muted-text mb-4 font-mono">
+                <div className="text-xs font-mono mb-4" style={{ color: '#4e6580' }}>
                   Supported: ZIP, PDF, PNG, JPG, MD, TXT (Max 10MB)
                 </div>
-                <label className="inline-block bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-5 py-2 rounded-full text-xs font-extrabold cursor-pointer transition-all shadow-md shadow-mint/15">
+                <label
+                  style={S.btn}
+                  className="px-5 py-2 rounded-full text-xs cursor-pointer"
+                >
                   Browse Files
                   <input
                     type="file"
@@ -189,7 +297,7 @@ export default function SubmitWork() {
 
         {/* Submission Notes */}
         <div>
-          <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-2 font-mono">
+          <label style={S.label}>
             Submission Notes & Verification Context
           </label>
           <textarea
@@ -197,13 +305,28 @@ export default function SubmitWork() {
             placeholder="Explain how each acceptance criterion has been met, provide test urls, deployment links, or execution logs."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-surface border border-border-card text-primary-text placeholder-muted-text text-sm focus:outline-none focus:border-mint focus:ring-1 focus:ring-mint resize-y"
+            style={S.textarea}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'rgba(45,212,191,0.5)';
+              e.target.style.boxShadow = '0 0 0 3px rgba(45,212,191,0.07)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'rgba(148,163,184,0.14)';
+              e.target.style.boxShadow = 'none';
+            }}
           />
         </div>
 
         {/* Advisory rule reminder */}
-        <div className="p-4 rounded-xl bg-surface/60 border border-border-card text-xs text-secondary-text flex items-start gap-3">
-          <span className="text-base text-mint">⚖️</span>
+        <div
+          className="p-4 rounded-xl text-xs flex items-start gap-3"
+          style={{
+            background: 'rgba(19,34,54,0.6)',
+            border: '1px solid rgba(148,163,184,0.10)',
+            color: '#94a3b8',
+          }}
+        >
+          <span className="text-base" style={{ color: '#2dd4bf' }}>⚖️</span>
           <span>
             Upon submission, status updates to <strong className="text-primary-text font-mono">SUBMITTED</strong>. The AI verification engine will audit the file against the agreed criteria before customer review.
           </span>
@@ -213,11 +336,16 @@ export default function SubmitWork() {
           <button
             type="submit"
             disabled={loading || !file}
-            className="flex-1 bg-gradient-to-r from-mint to-cyan-accent text-primary-bg font-extrabold py-3.5 px-6 rounded-full text-sm transition-all shadow-lg shadow-mint/20 flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{
+              ...S.btn,
+              flex: 1,
+              opacity: loading || !file ? 0.5 : 1,
+              cursor: loading || !file ? 'not-allowed' : 'pointer',
+            }}
           >
             {loading ? (
               <>
-                <div className="w-4 h-4 border-2 border-primary-bg border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 <span>Uploading Deliverables...</span>
               </>
             ) : (
@@ -227,7 +355,7 @@ export default function SubmitWork() {
           <button
             type="button"
             onClick={() => navigate(`/project/${projectId}`)}
-            className="px-6 py-3.5 rounded-full bg-surface hover:bg-surface-elevated border border-border-card text-secondary-text hover:text-primary-text text-xs font-bold"
+            style={S.btnOutline}
           >
             Cancel
           </button>

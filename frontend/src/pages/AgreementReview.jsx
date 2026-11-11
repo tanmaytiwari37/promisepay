@@ -59,39 +59,98 @@ export default function AgreementReview() {
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen text-primary-text font-mono">Loading agreement...</div>;
-  if (error) return <div className="text-red-400 p-6 glass-card rounded-xl">Error: {error}</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen font-mono text-sm" style={{ color: '#94a3b8' }}>
+        Loading agreement...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="p-6 rounded-2xl max-w-xl mx-auto mt-12"
+        style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}
+      >
+        Error: {error}
+      </div>
+    );
+  }
+
   if (!project) return null;
 
   const isCustomer = user?.role === 'customer';
 
   return (
-    <div className="max-w-3xl mx-auto mt-8 p-8 glass-card rounded-2xl border border-border-card text-primary-text font-sans">
+    <div
+      className="max-w-3xl mx-auto mt-8 p-8 rounded-2xl text-primary-text font-sans"
+      style={{
+        background: 'rgba(15,30,50,0.8)',
+        border: '1px solid rgba(148,163,184,0.1)',
+      }}
+    >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-extrabold tracking-tight">Agreement Review</h2>
+        <h2 className="text-2xl font-black tracking-tight">Agreement Review</h2>
         <StatusBadge status={project.status} />
       </div>
-      <p className="text-sm text-secondary-text mb-4"><strong>Agreement Title:</strong> {project.title}</p>
-      
+      <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
+        <strong>Agreement Title:</strong> {project.title}
+      </p>
+
       {project.agreement && (
-        <div className="mt-4 p-4 rounded-xl bg-surface/50 border border-border-card">
-          <h3 className="font-mono text-xs uppercase text-mint font-bold mb-2">Scope & Deliverables</h3>
-          <pre className="bg-card-bg p-3 rounded-lg overflow-auto whitespace-pre-wrap text-xs text-secondary-text font-mono border border-border-card">{JSON.stringify(project.agreement, null, 2)}</pre>
+        <div
+          className="mt-4 p-4 rounded-xl"
+          style={{ background: 'rgba(19,34,54,0.6)', border: '1px solid rgba(148,163,184,0.08)' }}
+        >
+          <h3 className="font-mono text-xs uppercase font-bold mb-2" style={{ color: '#2dd4bf' }}>
+            Scope & Deliverables
+          </h3>
+          <pre
+            className="p-3 rounded-lg overflow-auto whitespace-pre-wrap text-xs font-mono"
+            style={{ background: 'rgba(10,22,40,0.8)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.08)' }}
+          >
+            {JSON.stringify(project.agreement, null, 2)}
+          </pre>
         </div>
       )}
 
       <div className="mt-6 flex items-center gap-3">
         {isCustomer && project.status === 'AGREED' && (
-          <button onClick={handleApprove} disabled={actionLoading} className="px-6 py-2.5 bg-gradient-to-r from-mint to-cyan-accent text-primary-bg font-bold rounded-full text-xs transition-all shadow-md">
+          <button
+            onClick={handleApprove}
+            disabled={actionLoading}
+            className="px-6 py-2.5 rounded-full text-xs font-bold transition-all shadow-md"
+            style={{
+              background: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)',
+              color: '#07111f',
+            }}
+          >
             {actionLoading ? 'Processing...' : 'Approve Agreement'}
           </button>
         )}
         {isCustomer && project.status === 'APPROVED' && (
-          <button onClick={handlePay} disabled={actionLoading} className="px-6 py-2.5 bg-gradient-to-r from-mint to-cyan-accent text-primary-bg font-bold rounded-full text-xs transition-all shadow-md">
+          <button
+            onClick={handlePay}
+            disabled={actionLoading}
+            className="px-6 py-2.5 rounded-full text-xs font-bold transition-all shadow-md"
+            style={{
+              background: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)',
+              color: '#07111f',
+            }}
+          >
             {actionLoading ? 'Processing...' : 'Capture Payment'}
           </button>
         )}
-        <button onClick={() => navigate(`/project/${projectId}`)} className="px-5 py-2.5 bg-surface text-secondary-text hover:text-primary-text rounded-full text-xs font-semibold border border-border-card">
+        <button
+          onClick={() => navigate(`/project/${projectId}`)}
+          className="px-5 py-2.5 rounded-full text-xs font-semibold"
+          style={{
+            background: 'rgba(19,34,54,0.6)',
+            color: '#94a3b8',
+            border: '1px solid rgba(148,163,184,0.12)',
+          }}
+        >
           Go to Project Space →
         </button>
       </div>

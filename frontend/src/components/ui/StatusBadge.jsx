@@ -1,33 +1,33 @@
 import React from 'react';
 
 const STATUS_CONFIG = {
-  DRAFT:              { bg: 'bg-gray-500/15',    border: 'border-gray-500/30',    text: 'text-gray-300',        dot: 'bg-gray-400',       label: 'Draft' },
-  PENDING_APPROVAL:   { bg: 'bg-amber-500/15',   border: 'border-amber-500/30',   text: 'text-amber-300',       dot: 'bg-amber-400',      label: 'Pending Approval' },
-  AGREED:             { bg: 'bg-cyan-accent/15', border: 'border-cyan-accent/30', text: 'text-cyan-accent',    dot: 'bg-cyan-accent',    label: 'Agreed' },
-  PAYMENT_AUTHORIZED: { bg: 'bg-blue-500/15',    border: 'border-blue-500/30',    text: 'text-blue-300',        dot: 'bg-blue-400',       label: 'Escrow Authorized' },
-  IN_PROGRESS:        { bg: 'bg-mint/15',        border: 'border-mint/30',        text: 'text-mint',            dot: 'bg-mint',           label: 'In Progress' },
-  SUBMITTED:          { bg: 'bg-purple-500/15',  border: 'border-purple-500/30',  text: 'text-purple-300',      dot: 'bg-purple-400',     label: 'Submitted' },
-  UNDER_REVIEW:       { bg: 'bg-cyan-accent/15', border: 'border-cyan-accent/30', text: 'text-cyan-accent',    dot: 'bg-cyan-accent',    label: 'Under AI Review' },
-  APPROVED:           { bg: 'bg-emerald/15',     border: 'border-emerald/30',     text: 'text-emerald',         dot: 'bg-emerald',        label: 'Approved' },
-  REJECTED:           { bg: 'bg-red-500/15',     border: 'border-red-500/30',     text: 'text-red-400',         dot: 'bg-red-400',        label: 'Rejected' },
-  PAID:               { bg: 'bg-mint/20',        border: 'border-mint/40',        text: 'text-mint font-bold',  dot: 'bg-mint',           label: 'Paid & Completed' },
-  CANCELLED:          { bg: 'bg-red-500/15',     border: 'border-red-500/30',     text: 'text-red-400',         dot: 'bg-red-400',        label: 'Cancelled' },
-  DISPUTED:           { bg: 'bg-orange-500/15',  border: 'border-orange-500/30',  text: 'text-orange-400',      dot: 'bg-orange-400',     label: 'Disputed' },
+  DRAFT:              { label: 'Draft',              dot: '#6b7280', bg: 'rgba(107,114,128,0.12)', text: '#9ca3af', border: 'rgba(107,114,128,0.20)' },
+  PENDING_APPROVAL:   { label: 'Pending Approval',   dot: '#f59e0b', bg: 'rgba(245,158,11,0.10)',  text: '#fbbf24', border: 'rgba(245,158,11,0.22)' },
+  AGREED:             { label: 'Agreed',             dot: '#3b82f6', bg: 'rgba(59,130,246,0.10)',  text: '#60a5fa', border: 'rgba(59,130,246,0.22)' },
+  PAYMENT_AUTHORIZED: { label: 'Payment Auth.',      dot: '#8b5cf6', bg: 'rgba(139,92,246,0.10)',  text: '#a78bfa', border: 'rgba(139,92,246,0.22)' },
+  IN_PROGRESS:        { label: 'In Progress',        dot: '#2dd4bf', bg: 'rgba(45,212,191,0.10)',  text: '#2dd4bf', border: 'rgba(45,212,191,0.22)' },
+  SUBMITTED:          { label: 'Submitted',          dot: '#22d3ee', bg: 'rgba(34,211,238,0.10)',  text: '#22d3ee', border: 'rgba(34,211,238,0.22)' },
+  UNDER_REVIEW:       { label: 'Under Review',       dot: '#f59e0b', bg: 'rgba(245,158,11,0.10)',  text: '#fbbf24', border: 'rgba(245,158,11,0.22)' },
+  APPROVED:           { label: 'Approved',           dot: '#22c55e', bg: 'rgba(34,197,94,0.10)',   text: '#4ade80', border: 'rgba(34,197,94,0.22)' },
+  PAID:               { label: 'Paid',               dot: '#10b981', bg: 'rgba(16,185,129,0.12)',  text: '#34d399', border: 'rgba(16,185,129,0.25)' },
+  REJECTED:           { label: 'Rejected',           dot: '#ef4444', bg: 'rgba(239,68,68,0.10)',   text: '#f87171', border: 'rgba(239,68,68,0.22)' },
+  CANCELLED:          { label: 'Cancelled',          dot: '#6b7280', bg: 'rgba(107,114,128,0.08)', text: '#6b7280', border: 'rgba(107,114,128,0.15)' },
 };
 
 export default function StatusBadge({ status }) {
-  const config = STATUS_CONFIG[status?.toUpperCase()] || {
-    bg: 'bg-gray-500/15',
-    border: 'border-gray-500/30',
-    text: 'text-gray-300',
-    dot: 'bg-gray-400',
+  const key = status?.toUpperCase().replace(/ /g, '_') || 'DRAFT';
+  const cfg = STATUS_CONFIG[key] || {
     label: status || 'Unknown',
+    dot: '#6b7280', bg: 'rgba(107,114,128,0.10)', text: '#9ca3af', border: 'rgba(107,114,128,0.18)',
   };
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium border ${config.bg} ${config.border} ${config.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}></span>
-      <span>{config.label}</span>
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono whitespace-nowrap"
+      style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: cfg.dot }} />
+      {cfg.label}
     </span>
   );
 }

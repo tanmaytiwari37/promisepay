@@ -1,28 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-bg: #080F1E;
-  --color-secondary-bg: #0B1526;
-  --color-card-bg: #101E32;
-  --color-surface: #14283B;
-  --color-surface-elevated: #18314A;
-  --color-sidebar: #091122;
-  --color-mint: #54EBD5;
-  --color-mint-light: #7CF5E4;
-  --color-mint-dark: #3AC7B2;
-  --color-emerald: #10B981;
-  --color-cyan-accent: #20B8E8;
-  --color-primary-text: #F8FAFC;
-  --color-secondary-text: #A7B4C5;
-  --color-muted-text: #71839A;
-  --color-border-subtle: rgba(84, 235, 213, 0.18);
-  --color-border-card: rgba(167, 180, 197, 0.12);
-  --color-border: rgba(84, 235, 213, 0.22);
-  --color-border-focus: #54EBD5;
+  /* ── Core Backgrounds ── */
+  --color-primary-bg: #07111f;
+  --color-secondary-bg: #0a1628;
+  --color-card-bg: #0f1e32;
+  --color-surface: #132236;
+  --color-surface-elevated: #1a2d44;
+  --color-sidebar: #060e1a;
+
+  /* ── Brand Accent (Teal/Mint — matches Numix reference) ── */
+  --color-mint: #2dd4bf;
+  --color-mint-light: #5eead4;
+  --color-mint-dark: #0f9e8c;
+  --color-cyan-accent: #22d3ee;
+  --color-emerald: #10b981;
+
+  /* ── Text ── */
+  --color-primary-text: #f1f5f9;
+  --color-secondary-text: #94a3b8;
+  --color-muted-text: #4e6580;
+
+  /* ── Borders ── */
+  --color-border-subtle: rgba(45, 212, 191, 0.15);
+  --color-border-card: rgba(148, 163, 184, 0.10);
+  --color-border: rgba(45, 212, 191, 0.20);
+  --color-border-focus: #2dd4bf;
+
+  /* ── Status Colors ── */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* ── Typography ── */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-/* Global base styles */
+/* ═══════════════════════════════════════════
+   GLOBAL RESET & BASE
+═══════════════════════════════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -31,14 +49,15 @@ html {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-primary-bg);
-  color: var(--color-primary-text);
+  background-color: #07111f;
+  color: #f1f5f9;
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  background-color: var(--color-primary-bg);
-  color: var(--color-primary-text);
+  background-color: #07111f;
+  color: #f1f5f9;
   min-height: 100vh;
 }
 
@@ -46,66 +65,110 @@ body {
   min-height: 100vh;
 }
 
-/* Futuristic background grid */
+/* ═══════════════════════════════════════════
+   BACKGROUND GRID (Tech Fintech Pattern)
+═══════════════════════════════════════════ */
 .bg-tech-grid {
-  background-image: 
-    linear-gradient(rgba(32, 184, 232, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(32, 184, 232, 0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
 }
 
-.bg-tech-grid-dense {
-  background-image: 
-    linear-gradient(rgba(84, 235, 213, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(84, 235, 213, 0.06) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-/* Custom glow helpers */
-.glow-mint {
-  box-shadow: 0 0 25px -4px rgba(84, 235, 213, 0.35);
-}
-
-.glow-mint-subtle {
-  box-shadow: 0 0 15px -3px rgba(84, 235, 213, 0.2);
-}
-
-.glow-blue {
-  box-shadow: 0 0 30px -5px rgba(32, 184, 232, 0.3);
-}
-
-.text-gradient-mint {
-  background: linear-gradient(135deg, #FFFFFF 0%, #54EBD5 60%, #20B8E8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-cyan {
-  background: linear-gradient(135deg, #54EBD5 0%, #20B8E8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Glassmorphism Card with top border highlight */
+/* ═══════════════════════════════════════════
+   GLASSMORPHISM CARDS
+═══════════════════════════════════════════ */
 .glass-card {
-  background: linear-gradient(180deg, rgba(16, 30, 50, 0.85) 0%, rgba(11, 21, 38, 0.95) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(84, 235, 213, 0.15);
+  background: linear-gradient(
+    160deg,
+    rgba(15, 30, 50, 0.90) 0%,
+    rgba(10, 22, 40, 0.95) 100%
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(45, 212, 191, 0.12);
   position: relative;
+  overflow: hidden;
 }
 
 .glass-card::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 10%;
-  right: 10%;
+  left: 15%;
+  right: 15%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(84, 235, 213, 0.5), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(45, 212, 191, 0.4),
+    transparent
+  );
+  pointer-events: none;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--color-primary-bg); }
-::-webkit-scrollbar-thumb { background: var(--color-surface); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-muted-text); }
+/* ═══════════════════════════════════════════
+   GLOW EFFECTS
+═══════════════════════════════════════════ */
+.glow-mint {
+  box-shadow: 0 0 30px -6px rgba(45, 212, 191, 0.40);
+}
+
+.glow-mint-subtle {
+  box-shadow: 0 0 18px -4px rgba(45, 212, 191, 0.22);
+}
+
+.glow-blue {
+  box-shadow: 0 0 30px -5px rgba(34, 211, 238, 0.28);
+}
+
+/* ═══════════════════════════════════════════
+   TEXT GRADIENTS
+═══════════════════════════════════════════ */
+.text-gradient-mint {
+  background: linear-gradient(135deg, #ffffff 0%, #2dd4bf 55%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════════════════
+   CUSTOM SCROLLBAR
+═══════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #07111f;
+}
+::-webkit-scrollbar-thumb {
+  background: #132236;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2dd4bf40;
+}
+
+/* ═══════════════════════════════════════════
+   SELECTION COLOR
+═══════════════════════════════════════════ */
+::selection {
+  background: rgba(45, 212, 191, 0.25);
+  color: #f1f5f9;
+}
+
+/* ═══════════════════════════════════════════
+   FOCUS RING (Accessible)
+═══════════════════════════════════════════ */
+*:focus-visible {
+  outline: 2px solid #2dd4bf;
+  outline-offset: 2px;
+}

@@ -4,6 +4,49 @@ import { verifyProject, fetchReports, fetchProject, reviewProject } from '../api
 import { useAuth } from '../context/AuthContext';
 import StatusBadge from '../components/ui/StatusBadge';
 
+const C = {
+  card: {
+    background: 'rgba(15,30,50,0.80)',
+    border: '1px solid rgba(148,163,184,0.10)',
+    borderRadius: '20px',
+    padding: '28px',
+  },
+  innerCard: {
+    background: 'rgba(19,34,54,0.60)',
+    border: '1px solid rgba(148,163,184,0.09)',
+    borderRadius: '14px',
+    padding: '20px',
+  },
+  btn: {
+    background: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)',
+    color: '#07111f',
+    fontWeight: '800',
+    padding: '12px 24px',
+    borderRadius: '12px',
+    fontSize: '13px',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 4px 20px rgba(45,212,191,0.22)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+  },
+  btnOutline: {
+    background: 'rgba(19,34,54,0.60)',
+    border: '1px solid rgba(148,163,184,0.15)',
+    color: '#94a3b8',
+    fontWeight: '700',
+    padding: '11px 22px',
+    borderRadius: '12px',
+    fontSize: '13px',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+};
+
 export default function VerificationReport() {
   const { projectId } = useParams();
   const { user } = useAuth();
@@ -26,7 +69,6 @@ export default function VerificationReport() {
         const proj = await fetchProject(projectId);
         if (isMounted) setProject(proj);
 
-        // First check if an existing report is saved
         try {
           const reports = await fetchReports(projectId);
           if (reports && reports.length > 0) {
@@ -34,10 +76,9 @@ export default function VerificationReport() {
             return;
           }
         } catch {
-          // Fall through to run verification
+          // Fall through to verifyProject
         }
 
-        // Trigger verify endpoint to generate/fetch report
         const verifyData = await verifyProject(projectId);
         if (isMounted) setReport(verifyData);
       } catch (err) {
@@ -53,7 +94,6 @@ export default function VerificationReport() {
     return () => { isMounted = false; };
   }, [projectId]);
 
-  // Handle Customer Final Approval
   const handleCustomerApproval = async () => {
     setActionLoading(true);
     setError('');
@@ -74,31 +114,43 @@ export default function VerificationReport() {
     const s = status?.toLowerCase();
     if (s === 'completed' || s === 'passed' || s === 'met') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-mint/15 text-mint border border-mint/30">
-          <span className="w-1.5 h-1.5 rounded-full bg-mint"></span>
+        <span
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold"
+          style={{ background: 'rgba(45,212,191,0.12)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.25)' }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#2dd4bf' }} />
           Completed
         </span>
       );
     }
     if (s === 'missing' || s === 'failed' || s === 'unmet') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-red-500/15 text-red-400 border border-red-500/30">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+        <span
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold"
+          style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#f87171' }} />
           Missing
         </span>
       );
     }
     if (s === 'uncertain' || s === 'partial' || s === 'warning') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+        <span
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold"
+          style={{ background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.25)' }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#fbbf24' }} />
           Uncertain
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30">
-        <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+      <span
+        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold"
+        style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.25)' }}
+      >
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#60a5fa' }} />
         Informational
       </span>
     );
@@ -106,10 +158,11 @@ export default function VerificationReport() {
 
   if (loading) {
     return (
-      <div className="py-24 text-center max-w-xl mx-auto space-y-4 font-sans">
-        <div className="w-10 h-10 border-2 border-mint border-t-transparent rounded-full animate-spin mx-auto"></div>
+      <div className="py-24 text-center max-w-xl mx-auto space-y-4">
+        <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto"
+          style={{ borderColor: '#2dd4bf', borderTopColor: 'transparent' }} />
         <h3 className="text-lg font-bold text-primary-text">Analyzing Deliverable Evidence...</h3>
-        <p className="text-xs text-secondary-text font-mono">
+        <p className="text-xs font-mono" style={{ color: '#94a3b8' }}>
           Executing automated criteria tests. AI operates as an impartial advisory auditor.
         </p>
       </div>
@@ -120,84 +173,76 @@ export default function VerificationReport() {
   const verificationDetails = report?.verification;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-7 font-sans">
+    <div className="max-w-4xl mx-auto space-y-7">
       {/* Breadcrumb & Navigation */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to={`/project/${projectId}`} className="text-xs font-mono text-muted-text hover:text-mint transition-colors">
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <Link to={`/project/${projectId}`} style={{ color: '#4e6580' }} className="hover:text-mint transition-colors">
             ← AGREEMENT SPACE
           </Link>
-          <span className="text-muted-text text-xs">/</span>
-          <span className="text-xs font-mono text-mint font-medium">AI AUDIT REPORT</span>
+          <span style={{ color: '#4e6580' }}>/</span>
+          <span style={{ color: '#2dd4bf' }}>AI AUDIT REPORT</span>
         </div>
-        {project && <StatusBadge status={project.status} />}
+        <StatusBadge status={project?.status} />
+      </div>
+
+      {/* Header Banner */}
+      <div>
+        <h1 className="text-2xl font-black text-primary-text tracking-tight">
+          AI Deliverable Verification Audit
+        </h1>
+        <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>
+          Objective automated evaluation of submitted proof against contractual acceptance criteria.
+        </p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5">
-          <span>⚠️</span>
-          <span className="flex-1">{error}</span>
+        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)', borderRadius: '12px', padding: '14px 18px', color: '#f87171', fontSize: '14px' }}>
+          ⚠ {error}
         </div>
       )}
 
       {approvalSuccess && (
-        <div className="p-4 rounded-xl bg-mint/10 border border-mint/20 text-mint text-sm flex items-center gap-2.5">
-          <span>✓</span>
-          <span>Customer approval recorded! Returning to workspace for payment capture...</span>
+        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.22)', borderRadius: '12px', padding: '14px 18px', color: '#4ade80', fontSize: '14px' }}>
+          ✓ Deliverables approved! Returning to project space...
         </div>
       )}
 
-      {/* Main Audit Header Card */}
-      <div className="glass-card rounded-2xl p-8 border border-border-card space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-surface border border-mint/30 flex items-center justify-center text-3xl text-mint shadow-lg shadow-mint/10">
-              🤖
-            </div>
-            <div>
-              <div className="text-xs font-mono text-mint uppercase tracking-wider">OFFICIAL AUDIT REPORT</div>
-              <h1 className="text-2xl font-extrabold text-primary-text tracking-tight mt-0.5">
-                AI Deliverables Verification
-              </h1>
-              <p className="text-xs text-secondary-text font-mono mt-0.5">
-                Report #{report?.report_id || 1} • {report?.created_at ? new Date(report.created_at).toLocaleString() : 'Recent'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-mint/15 text-mint border border-mint/30">
-              ● Evidence Evaluated
-            </span>
-          </div>
-        </div>
-
-        {/* Advisory rule notification box */}
-        <div className="p-4 rounded-xl bg-surface/80 border border-border-card text-xs text-secondary-text leading-relaxed">
-          <strong className="text-primary-text font-semibold flex items-center gap-1.5 mb-1 font-mono">
-            <span>⚖️</span> GOVERNANCE CHARTER:
+      {/* AI Governance Advisory Disclaimer */}
+      <div
+        className="rounded-2xl p-5 flex items-start gap-4 text-xs leading-relaxed"
+        style={{
+          background: 'rgba(19,34,54,0.6)',
+          border: '1px solid rgba(148,163,184,0.12)',
+          color: '#94a3b8',
+        }}
+      >
+        <span className="text-xl" style={{ color: '#2dd4bf' }}>⚖️</span>
+        <div>
+          <strong className="text-primary-text font-mono uppercase tracking-wider block mb-0.5">
+            PromisePay Governance Charter Notice
           </strong>
-          This verification audit is <span className="text-mint font-semibold">strictly advisory</span>. In accordance with PromisePay governance, artificial intelligence cannot independently authorize or capture escrowed funds. The customer holds exclusive approval authority.
+          This verification audit is strictly <span style={{ color: '#2dd4bf' }} className="font-semibold">advisory</span>. In accordance with PromisePay governance, artificial intelligence cannot independently authorize or capture escrowed funds. The customer holds exclusive approval authority.
         </div>
       </div>
 
       {/* Overall Summary */}
       {verificationDetails?.overall_summary && (
-        <div className="glass-card rounded-2xl p-6 border border-border-card space-y-2">
-          <h2 className="text-xs font-mono font-bold text-mint uppercase tracking-wider">
+        <div style={C.card} className="space-y-2">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider" style={{ color: '#2dd4bf' }}>
             Executive Summary
           </h2>
-          <p className="text-sm text-primary-text leading-relaxed font-sans">
+          <p className="text-sm leading-relaxed text-primary-text">
             {verificationDetails.overall_summary}
           </p>
         </div>
       )}
 
       {/* Acceptance Criteria Breakdown */}
-      <div className="glass-card rounded-2xl p-6 lg:p-8 space-y-5 border border-border-card">
-        <div className="flex items-center justify-between border-b border-border-card pb-4">
+      <div style={C.card} className="space-y-5">
+        <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid rgba(148,163,184,0.09)' }}>
           <h2 className="text-base font-bold text-primary-text tracking-tight">Contractual Criteria Breakdown</h2>
-          <span className="text-xs font-mono text-muted-text">
+          <span className="text-xs font-mono" style={{ color: '#4e6580' }}>
             {verificationDetails?.criteria?.length || 0} Test Items
           </span>
         </div>
@@ -207,26 +252,34 @@ export default function VerificationReport() {
             {verificationDetails.criteria.map((item, idx) => (
               <div
                 key={item.criterion_id || idx}
-                className="bg-surface/40 border border-border-card rounded-xl p-5 space-y-3"
+                style={C.innerCard}
+                className="space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="font-bold text-primary-text text-sm flex items-center gap-2.5">
-                    <span className="text-xs font-mono text-muted-text">#{idx + 1}</span>
+                    <span className="text-xs font-mono" style={{ color: '#4e6580' }}>#{idx + 1}</span>
                     <span>{item.criterion_id || `Criterion ${idx + 1}`}</span>
                   </div>
                   <div>{getStatusBadge(item.status)}</div>
                 </div>
 
                 {item.reasoning && (
-                  <div className="text-xs text-secondary-text">
-                    <span className="text-muted-text font-mono font-medium">Analysis: </span>
+                  <div className="text-xs" style={{ color: '#94a3b8' }}>
+                    <span className="font-mono font-medium" style={{ color: '#4e6580' }}>Analysis: </span>
                     {item.reasoning}
                   </div>
                 )}
 
                 {item.evidence && (
-                  <div className="bg-card-bg/90 p-3 rounded-lg border border-border-card text-xs text-secondary-text font-mono overflow-x-auto">
-                    <span className="text-mint block mb-1 font-bold">Quoted Evidence:</span>
+                  <div
+                    className="p-3 rounded-lg text-xs font-mono overflow-x-auto"
+                    style={{
+                      background: 'rgba(10,22,40,0.8)',
+                      border: '1px solid rgba(148,163,184,0.08)',
+                      color: '#94a3b8',
+                    }}
+                  >
+                    <span className="block mb-1 font-bold" style={{ color: '#2dd4bf' }}>Quoted Evidence:</span>
                     "{item.evidence}"
                   </div>
                 )}
@@ -234,18 +287,21 @@ export default function VerificationReport() {
             ))}
           </div>
         ) : (
-          <div className="p-6 text-center text-xs text-muted-text bg-surface/30 rounded-xl font-mono">
+          <div
+            className="p-6 text-center text-xs font-mono rounded-xl"
+            style={{ background: 'rgba(19,34,54,0.4)', color: '#4e6580' }}
+          >
             No specific criteria details available in this report payload.
           </div>
         )}
 
         {/* Improvement Suggestions */}
         {verificationDetails?.improvement_suggestions && verificationDetails.improvement_suggestions.length > 0 && (
-          <div className="pt-4 border-t border-border-card space-y-2">
-            <h3 className="text-xs font-mono font-bold text-cyan-accent uppercase tracking-wider">
+          <div className="pt-4 space-y-2" style={{ borderTop: '1px solid rgba(148,163,184,0.09)' }}>
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider" style={{ color: '#22d3ee' }}>
               Auditor Recommendations
             </h3>
-            <ul className="list-disc list-inside text-xs text-secondary-text space-y-1 font-sans">
+            <ul className="list-disc list-inside text-xs space-y-1" style={{ color: '#94a3b8' }}>
               {verificationDetails.improvement_suggestions.map((sug, i) => (
                 <li key={i}>{sug}</li>
               ))}
@@ -256,10 +312,16 @@ export default function VerificationReport() {
 
       {/* Customer Final Decision Action Section */}
       {isCustomer && (
-        <div className="glass-card rounded-2xl p-7 border border-mint/30 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-5 bg-gradient-to-r from-card-bg to-surface">
+        <div
+          style={{
+            ...C.card,
+            border: '1px solid rgba(45,212,191,0.25)',
+          }}
+          className="flex flex-col sm:flex-row items-center justify-between gap-5"
+        >
           <div className="space-y-1 text-center sm:text-left">
             <h3 className="text-base font-bold text-primary-text">Accept & Approve Deliverables?</h3>
-            <p className="text-xs text-secondary-text max-w-lg">
+            <p className="text-xs max-w-lg" style={{ color: '#94a3b8' }}>
               Approving confirms work meets contractual standards and unlocks payment capture in the project workspace.
             </p>
           </div>
@@ -268,7 +330,12 @@ export default function VerificationReport() {
             <button
               onClick={handleCustomerApproval}
               disabled={actionLoading || approvalSuccess}
-              className="w-full sm:w-auto bg-gradient-to-r from-mint to-cyan-accent text-primary-bg font-extrabold py-3.5 px-8 rounded-full text-sm transition-all shadow-xl shadow-mint/25 disabled:opacity-50"
+              style={{
+                ...C.btn,
+                opacity: actionLoading || approvalSuccess ? 0.6 : 1,
+                cursor: actionLoading || approvalSuccess ? 'not-allowed' : 'pointer',
+              }}
+              className="w-full sm:w-auto"
             >
               {actionLoading ? 'Approving...' : '✓ Approve Deliverables'}
             </button>

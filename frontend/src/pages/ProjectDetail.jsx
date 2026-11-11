@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   fetchProject,
@@ -15,9 +15,57 @@ import {
 } from '../api/services';
 import StatusBadge from '../components/ui/StatusBadge';
 
+// ── Shared style tokens ──────────────────────────────────────────────
+const C = {
+  card: {
+    background: 'rgba(15,30,50,0.80)',
+    border: '1px solid rgba(148,163,184,0.10)',
+    borderRadius: '20px',
+    padding: '28px',
+  },
+  innerCard: {
+    background: 'rgba(19,34,54,0.60)',
+    border: '1px solid rgba(148,163,184,0.09)',
+    borderRadius: '14px',
+    padding: '20px',
+  },
+  btn: {
+    background: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)',
+    color: '#07111f', fontWeight: '800', padding: '12px 22px', borderRadius: '12px',
+    fontSize: '13px', border: 'none', cursor: 'pointer',
+    boxShadow: '0 4px 20px rgba(45,212,191,0.22)',
+    display: 'inline-flex', alignItems: 'center', gap: '8px', transition: 'all 0.15s',
+  },
+  btnOutline: {
+    background: 'rgba(19,34,54,0.60)', border: '1px solid rgba(148,163,184,0.15)',
+    color: '#94a3b8', fontWeight: '700', padding: '11px 22px', borderRadius: '12px',
+    fontSize: '13px', cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '8px',
+  },
+  btnDanger: {
+    background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.22)',
+    color: '#f87171', fontWeight: '700', padding: '11px 22px', borderRadius: '12px',
+    fontSize: '13px', cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '8px',
+  },
+  btnSuccess: {
+    background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
+    color: '#4ade80', fontWeight: '800', padding: '12px 22px', borderRadius: '12px',
+    fontSize: '13px', cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: '8px',
+  },
+  inputStyle: {
+    width: '100%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px',
+    background: 'rgba(19,34,54,0.80)', border: '1px solid rgba(148,163,184,0.14)',
+    color: '#f1f5f9', outline: 'none', fontFamily: 'Inter, sans-serif',
+  },
+  label: { fontSize: '10px', fontWeight: '700', color: '#4e6580', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'monospace' },
+};
+
 export default function ProjectDetail() {
   const { projectId } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
   const [agreement, setAgreement] = useState(null);
@@ -25,25 +73,18 @@ export default function ProjectDetail() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-
-  // Assign freelancer modal/input state
   const [freelancerEmail, setFreelancerEmail] = useState('');
   const [showAssignModal, setShowAssignModal] = useState(false);
 
-  // Load project & agreement data
   const loadProjectData = async () => {
     try {
       setError('');
       const proj = await fetchProject(projectId);
       setProject(proj);
-
       try {
         const agr = await fetchAgreement(projectId);
         setAgreement(agr);
-      } catch {
-        // Agreement may not be created yet, perfectly normal
-        setAgreement(null);
-      }
+      } catch { setAgreement(null); }
     } catch (err) {
       setError(err.message || 'Failed to load project details');
     } finally {
@@ -51,533 +92,292 @@ export default function ProjectDetail() {
     }
   };
 
-  useEffect(() => {
-    loadProjectData();
-  }, [projectId]);
+  useEffect(() => { loadProjectData(); }, [projectId]);
 
   const isCustomer = user?.role === 'customer' || user?.id === project?.customer_id;
   const isFreelancer = user?.role === 'freelancer' || user?.id === project?.freelancer_id;
+  const status = project?.status?.toUpperCase();
 
-  // 1. Assign Freelancer
+  const doAction = async (fn, successText) => {
+    setActionLoading(true); setError(''); setSuccessMsg('');
+    try { await fn(); setSuccessMsg(successText); await loadProjectData(); }
+    catch (err) { setError(err.message || 'Action failed'); }
+    finally { setActionLoading(false); }
+  };
+
   const handleAssignFreelancer = async (e) => {
     e.preventDefault();
     if (!freelancerEmail) return;
-    setActionLoading(true);
-    setError('');
-    try {
+    await doAction(async () => {
       await assignFreelancer(projectId, freelancerEmail);
-      setSuccessMsg(`Freelancer ${freelancerEmail} assigned successfully!`);
-      setShowAssignModal(false);
-      setFreelancerEmail('');
-      await loadProjectData();
-    } catch (err) {
-      setError(err.message || 'Failed to assign freelancer');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // 2. Generate AI Agreement
-  const handleGenerateAgreement = async () => {
-    setActionLoading(true);
-    setError('');
-    try {
-      const generated = await generateAgreement(projectId);
-      setAgreement(generated);
-      setSuccessMsg('AI Agreement generated with deliverables and acceptance criteria!');
-      await loadProjectData();
-    } catch (err) {
-      setError(err.message || 'Failed to generate agreement');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // 3. Submit For Approval (Move DRAFT to PENDING_APPROVAL)
-  const handleSubmitForApproval = async () => {
-    setActionLoading(true);
-    setError('');
-    try {
-      await submitForApproval(projectId);
-      setSuccessMsg('Project submitted for agreement review!');
-      await loadProjectData();
-    } catch (err) {
-      setError(err.message || 'Failed to submit for approval');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // 4. Approve Agreement
-  const handleApproveAgreement = async () => {
-    setActionLoading(true);
-    setError('');
-    try {
-      await approveAgreement(projectId);
-      setSuccessMsg('Agreement approved!');
-      await loadProjectData();
-    } catch (err) {
-      setError(err.message || 'Failed to approve agreement');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // 5. Authorize Payment (PayPal mock)
-  const handleAuthorizePayment = async () => {
-    setActionLoading(true);
-    setError('');
-    try {
-      await createOrder(projectId);
-      await authorizePayment(projectId);
-      setSuccessMsg('PayPal payment authorized! Project is now IN PROGRESS.');
-      await loadProjectData();
-    } catch (err) {
-      setError(err.message || 'Failed to authorize payment');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // 6. Customer Final Review / Approval
-  const handleCustomerApproval = async () => {
-    setActionLoading(true);
-    setError('');
-    try {
-      await reviewProject(projectId, 'approve', 'Customer verified deliverables and approved work.');
-      setSuccessMsg('Deliverables approved! You can now capture payment to release funds.');
-      await loadProjectData();
-    } catch (err) {
-      setError(err.message || 'Customer approval failed');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // 7. Capture Payment
-  const handleCapturePayment = async () => {
-    setActionLoading(true);
-    setError('');
-    try {
-      await capturePayment(projectId);
-      setSuccessMsg('Payment successfully captured! Freelancer has been paid.');
-      await loadProjectData();
-    } catch (err) {
-      setError(err.message || 'Failed to capture payment');
-    } finally {
-      setActionLoading(false);
-    }
+      setShowAssignModal(false); setFreelancerEmail('');
+    }, `Freelancer ${freelancerEmail} assigned!`);
   };
 
   if (loading) {
     return (
-      <div className="py-24 text-center">
-        <div className="w-8 h-8 border-2 border-mint border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p className="text-secondary-text text-sm">Loading agreement space...</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: '#2dd4bf', borderTopColor: 'transparent' }} />
+        <span className="text-sm font-mono" style={{ color: '#94a3b8' }}>Loading workspace...</span>
       </div>
     );
   }
 
-  if (!project) {
+  if (error && !project) {
     return (
-      <div className="glass-card rounded-2xl p-10 text-center border border-border-card">
-        <h2 className="text-xl font-bold text-primary-text mb-2">Agreement not found</h2>
-        <p className="text-secondary-text text-sm mb-4">The agreement you are looking for does not exist or you do not have permission.</p>
-        <Link to="/dashboard" className="text-mint hover:underline text-sm font-semibold">← Back to Dashboard</Link>
+      <div className="max-w-2xl mx-auto space-y-4">
+        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)', borderRadius: '14px', padding: '20px', color: '#f87171' }}>
+          ⚠ {error}
+        </div>
+        <Link to="/dashboard" className="text-sm font-bold text-mint hover:underline">← Back to Dashboard</Link>
       </div>
     );
   }
-
-  const status = project.status?.toUpperCase();
 
   return (
-    <div className="max-w-6xl mx-auto space-y-7 font-sans">
-      {/* Top Breadcrumb & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link to="/dashboard" className="text-muted-text hover:text-mint text-xs font-mono transition-colors">
-            ← AGREEMENTS
-          </Link>
-          <span className="text-muted-text text-xs">/</span>
-          <span className="text-primary-text font-bold text-sm truncate max-w-xs">{project.title}</span>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Breadcrumb + Title */}
+      <div>
+        <div className="flex items-center gap-2 mb-2 text-xs font-mono">
+          <Link to="/dashboard" style={{ color: '#4e6580' }} className="hover:text-mint transition-colors">← DASHBOARD</Link>
+          <span style={{ color: '#4e6580' }}>/</span>
+          <span style={{ color: '#2dd4bf' }}>PROJECT #{projectId}</span>
         </div>
-        <StatusBadge status={project.status} />
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-primary-text tracking-tight">{project?.title}</h1>
+            <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>{project?.description}</p>
+          </div>
+          <StatusBadge status={project?.status} />
+        </div>
       </div>
 
       {/* Alerts */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center justify-between">
-          <span>⚠️ {error}</span>
-          <button onClick={() => setError('')} className="text-xs">✕</button>
+        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)', borderRadius: '12px', padding: '14px 18px', color: '#f87171', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>⚠ {error}</span>
+          <button onClick={() => setError('')} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '16px' }}>×</button>
         </div>
       )}
-
       {successMsg && (
-        <div className="p-4 rounded-xl bg-mint/10 border border-mint/20 text-mint text-sm flex items-center justify-between">
+        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.22)', borderRadius: '12px', padding: '14px 18px', color: '#4ade80', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>✓ {successMsg}</span>
-          <button onClick={() => setSuccessMsg('')} className="text-xs">✕</button>
+          <button onClick={() => setSuccessMsg('')} style={{ background: 'none', border: 'none', color: '#4ade80', cursor: 'pointer', fontSize: '16px' }}>×</button>
         </div>
       )}
 
-      {/* Main Project Overview Card */}
-      <div className="glass-card rounded-2xl p-6 lg:p-8 border border-border-card">
-        <div className="flex flex-col lg:flex-row justify-between lg:items-start gap-6">
-          <div className="space-y-2 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-mint uppercase tracking-wider">PROTOCOL AGREEMENT</span>
-              <span className="text-xs text-muted-text">• ID #{project.id}</span>
-            </div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold text-primary-text tracking-tight">
-              {project.title}
-            </h1>
-            <p className="text-secondary-text text-sm leading-relaxed max-w-2xl">
-              {project.description || 'No detailed scope description provided.'}
-            </p>
+      {/* Project Info Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          { label: 'Escrow Amount', value: `$${Number(project?.budget || 0).toLocaleString()} ${project?.currency || 'USD'}`, accent: '#2dd4bf' },
+          { label: 'Deadline', value: project?.deadline ? new Date(project.deadline).toLocaleDateString() : 'Flexible', accent: '#f59e0b' },
+          { label: 'Freelancer', value: project?.freelancer_email || project?.freelancer?.email || 'Not assigned', accent: '#8b5cf6' },
+        ].map((m) => (
+          <div key={m.label} style={C.card}>
+            <div style={C.label}>{m.label}</div>
+            <div className="text-base font-black mt-2" style={{ color: m.accent }}>{m.value}</div>
           </div>
-
-          <div className="flex flex-wrap lg:flex-col items-start lg:items-end gap-4 p-4 lg:p-0 rounded-xl bg-surface/40 lg:bg-transparent border lg:border-none border-border-card">
-            <div>
-              <div className="text-[11px] text-muted-text font-mono uppercase tracking-wider">Escrow Volume</div>
-              <div className="text-2xl font-extrabold text-mint font-mono mt-0.5">
-                ${Number(project.budget).toLocaleString()} <span className="text-xs font-normal text-muted-text">{project.currency || 'USD'}</span>
-              </div>
-            </div>
-            <div>
-              <div className="text-[11px] text-muted-text font-mono uppercase tracking-wider">Deadline</div>
-              <div className="text-sm font-semibold text-primary-text font-mono mt-0.5">
-                {project.deadline ? new Date(project.deadline).toLocaleDateString() : 'Flexible'}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Participant Info Banner */}
-        <div className="mt-8 pt-6 border-t border-border-card grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-mint/15 text-mint font-bold text-xs flex items-center justify-center font-mono">
-              C
-            </div>
-            <div>
-              <div className="text-[11px] text-muted-text font-mono uppercase">Customer Party</div>
-              <div className="text-sm font-semibold text-primary-text">
-                User #{project.customer_id} {isCustomer && <span className="text-xs text-mint font-mono">(You)</span>}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-cyan-accent/15 text-cyan-accent font-bold text-xs flex items-center justify-center font-mono">
-                F
-              </div>
-              <div>
-                <div className="text-[11px] text-muted-text font-mono uppercase">Freelancer Party</div>
-                <div className="text-sm font-semibold text-primary-text">
-                  {project.freelancer_id ? (
-                    <>User #{project.freelancer_id} {isFreelancer && <span className="text-xs text-cyan-accent font-mono">(You)</span>}</>
-                  ) : (
-                    <span className="text-muted-text italic">Unassigned</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {!project.freelancer_id && isCustomer && (
-              <button
-                onClick={() => setShowAssignModal(true)}
-                className="text-xs bg-surface hover:bg-surface-elevated border border-border-card text-mint px-3.5 py-1.5 rounded-lg font-bold transition-all"
-              >
-                + Assign Freelancer
-              </button>
-            )}
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Interactive Workflow Action Center */}
-      <div className="glass-card rounded-2xl p-6 border border-border-card">
-        <h2 className="text-xs font-mono font-bold text-mint uppercase tracking-wider mb-4">
-          Current Protocol Action
-        </h2>
-
-        {/* 1. DRAFT State */}
-        {status === 'DRAFT' && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface/50 border border-border-card p-5 rounded-xl">
-            <div>
-              <h3 className="font-bold text-primary-text text-base">Step 1: Agreement Generation</h3>
-              <p className="text-xs text-secondary-text mt-1 max-w-xl">
-                {!project.freelancer_id
-                  ? 'Assign a freelancer to collaborate, then generate the AI agreement with acceptance criteria.'
-                  : !agreement
-                  ? 'Generate an AI agreement containing structured deliverables and automated verification criteria.'
-                  : 'Agreement generated! Submit it for participant approval.'}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {!agreement ? (
-                <button
-                  onClick={handleGenerateAgreement}
-                  disabled={actionLoading}
-                  className="bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-md shadow-mint/20"
-                >
-                  {actionLoading ? 'Generating...' : '✨ Generate AI Scope'}
-                </button>
-              ) : (
-                isCustomer && (
-                  <button
-                    onClick={handleSubmitForApproval}
-                    disabled={actionLoading}
-                    className="bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-md shadow-mint/20"
-                  >
-                    {actionLoading ? 'Submitting...' : 'Submit For Approval →'}
-                  </button>
-                )
-              )}
-            </div>
+      {/* Action Center */}
+      <div style={C.card}>
+        <div className="flex items-center gap-2 mb-5" style={{ borderBottom: '1px solid rgba(148,163,184,0.09)', paddingBottom: '18px' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(45,212,191,0.10)', border: '1px solid rgba(45,212,191,0.20)' }}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="#2dd4bf">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
           </div>
-        )}
+          <div>
+            <div className="font-black text-primary-text text-base">Action Center</div>
+            <div className="text-xs font-mono" style={{ color: '#4e6580' }}>Available actions for current status: {project?.status}</div>
+          </div>
+        </div>
 
-        {/* 2. PENDING_APPROVAL State */}
-        {status === 'PENDING_APPROVAL' && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface/50 border border-border-card p-5 rounded-xl">
-            <div>
-              <h3 className="font-bold text-primary-text text-base">Step 2: Sign Agreement Terms</h3>
-              <p className="text-xs text-secondary-text mt-1 max-w-xl">
-                Both customer and freelancer must approve the agreement terms before funds can be authorized into PayPal escrow.
-              </p>
-            </div>
-            <button
-              onClick={handleApproveAgreement}
-              disabled={actionLoading}
-              className="bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-md shadow-mint/20"
-            >
-              {actionLoading ? 'Signing...' : '✓ Approve Agreement Terms'}
+        <div className="flex flex-wrap gap-3">
+          {/* Customer: Assign Freelancer */}
+          {isCustomer && !project?.freelancer_id && !['PAID', 'CANCELLED'].includes(status) && (
+            <button onClick={() => setShowAssignModal(true)} style={C.btnOutline}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+              Assign Freelancer
             </button>
-          </div>
-        )}
+          )}
 
-        {/* 3. AGREED State */}
-        {status === 'AGREED' && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface/50 border border-border-card p-5 rounded-xl">
-            <div>
-              <h3 className="font-bold text-primary-text text-base">Step 3: Authorize Escrow Payment</h3>
-              <p className="text-xs text-secondary-text mt-1 max-w-xl">
-                {isCustomer
-                  ? 'Agreement terms locked! Authorize the PayPal escrow payment to start the project. Funds remain safely in escrow until you approve final delivery.'
-                  : 'Agreement terms locked! Waiting for the customer to authorize payment into escrow.'}
-              </p>
-            </div>
-            {isCustomer && (
+          {/* Customer: Generate AI Agreement */}
+          {isCustomer && !agreement && status === 'DRAFT' && (
+            <button onClick={() => doAction(() => generateAgreement(projectId), 'AI Agreement generated!')} disabled={actionLoading} style={C.btn}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+              {actionLoading ? 'Generating...' : 'Generate AI Agreement'}
+            </button>
+          )}
+
+          {/* Customer: Submit for Approval */}
+          {isCustomer && agreement && status === 'DRAFT' && (
+            <button onClick={() => doAction(() => submitForApproval(projectId), 'Submitted for approval!')} disabled={actionLoading} style={C.btn}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+              {actionLoading ? 'Submitting...' : 'Submit for Approval'}
+            </button>
+          )}
+
+          {/* Customer: Approve Agreement */}
+          {isCustomer && status === 'PENDING_APPROVAL' && (
+            <button onClick={() => doAction(() => approveAgreement(projectId), 'Agreement approved!')} disabled={actionLoading} style={C.btnSuccess}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {actionLoading ? 'Approving...' : 'Approve Agreement'}
+            </button>
+          )}
+
+          {/* Customer: Authorize Payment */}
+          {isCustomer && status === 'AGREED' && (
+            <button
+              onClick={() => doAction(async () => { await createOrder(projectId); await authorizePayment(projectId); }, 'Payment authorized — project is now IN PROGRESS!')}
+              disabled={actionLoading}
+              style={C.btn}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              {actionLoading ? 'Authorizing...' : 'Authorize PayPal Payment'}
+            </button>
+          )}
+
+          {/* Freelancer: Submit Work */}
+          {isFreelancer && ['PAYMENT_AUTHORIZED', 'IN_PROGRESS'].includes(status) && (
+            <button onClick={() => navigate(`/project/${projectId}/submit`)} style={C.btn}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+              Submit Deliverables
+            </button>
+          )}
+
+          {/* Customer: Run AI Verification */}
+          {isCustomer && ['SUBMITTED', 'UNDER_REVIEW'].includes(status) && (
+            <button onClick={() => navigate(`/project/${projectId}/verify`)} style={C.btn}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+              Run AI Verification
+            </button>
+          )}
+
+          {/* Customer: Approve & Capture */}
+          {isCustomer && status === 'APPROVED' && (
+            <>
               <button
-                onClick={handleAuthorizePayment}
+                onClick={() => doAction(() => capturePayment(projectId), 'Payment captured! Funds released to freelancer.')}
                 disabled={actionLoading}
-                className="bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-md shadow-mint/20 flex items-center gap-2"
+                style={C.btnSuccess}
               >
-                {actionLoading ? 'Authorizing...' : '🔒 Authorize PayPal Escrow'}
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                {actionLoading ? 'Processing...' : '🔒 Capture Payment (Release Funds)'}
               </button>
-            )}
-          </div>
-        )}
-
-        {/* 4. IN_PROGRESS / PAYMENT_AUTHORIZED State */}
-        {(status === 'IN_PROGRESS' || status === 'PAYMENT_AUTHORIZED') && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface/50 border border-border-card p-5 rounded-xl">
-            <div>
-              <h3 className="font-bold text-primary-text text-base">Step 4: Active Work & Submission</h3>
-              <p className="text-xs text-secondary-text mt-1 max-w-xl">
-                Payment is securely held in escrow. The freelancer can now complete deliverables and submit evidence files.
-              </p>
-            </div>
-            {isFreelancer ? (
-              <Link
-                to={`/project/${projectId}/submit`}
-                className="bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-md shadow-mint/20 flex items-center gap-2"
+              <button
+                onClick={() => doAction(() => reviewProject(projectId, 'reject', 'Customer rejected — requesting revision.'), 'Revision requested.')}
+                disabled={actionLoading}
+                style={C.btnDanger}
               >
-                📤 Submit Deliverable Files
-              </Link>
-            ) : (
-              <span className="text-xs font-mono bg-surface text-secondary-text px-4 py-2 rounded-lg border border-border-card">
-                Waiting for freelancer submission
-              </span>
-            )}
-          </div>
-        )}
+                Request Revision
+              </button>
+            </>
+          )}
 
-        {/* 5. SUBMITTED State */}
-        {status === 'SUBMITTED' && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface/50 border border-border-card p-5 rounded-xl">
-            <div>
-              <h3 className="font-bold text-primary-text text-base">Step 5: Run AI Verification Audit</h3>
-              <p className="text-xs text-secondary-text mt-1 max-w-xl">
-                Deliverables submitted! Open the AI verification audit to evaluate evidence against acceptance criteria.
-              </p>
-            </div>
+          {/* Customer: Final approval after UNDER_REVIEW */}
+          {isCustomer && status === 'UNDER_REVIEW' && (
+            <button
+              onClick={() => doAction(() => reviewProject(projectId, 'approve', 'Customer verified deliverables.'), 'Deliverables approved!')}
+              disabled={actionLoading}
+              style={C.btnSuccess}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              {actionLoading ? 'Approving...' : 'Approve Deliverables'}
+            </button>
+          )}
+
+          {/* View Verification Report */}
+          {['SUBMITTED', 'UNDER_REVIEW', 'APPROVED', 'PAID'].includes(status) && (
             <Link
               to={`/project/${projectId}/verify`}
-              className="bg-gradient-to-r from-cyan-accent to-mint text-primary-bg px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-md shadow-cyan-accent/20 flex items-center gap-2"
+              style={C.btnOutline}
             >
-              🤖 Open AI Verification Audit →
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              View Verification Report
             </Link>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* 6. UNDER_REVIEW State */}
-        {status === 'UNDER_REVIEW' && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface/50 border border-border-card p-5 rounded-xl">
-            <div>
-              <h3 className="font-bold text-primary-text text-base">Step 6: Customer Final Approval</h3>
-              <p className="text-xs text-secondary-text mt-1 max-w-xl">
-                AI audit complete. Customer reviews the evidence and has final decision authority to approve or request changes.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                to={`/project/${projectId}/verify`}
-                className="bg-surface hover:bg-surface-elevated text-primary-text border border-border-card px-4 py-2.5 rounded-full text-xs font-bold"
-              >
-                View Audit Report
-              </Link>
-              {isCustomer && (
-                <button
-                  onClick={handleCustomerApproval}
-                  disabled={actionLoading}
-                  className="bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-md shadow-mint/20"
-                >
-                  {actionLoading ? 'Approving...' : '✓ Approve Completed Work'}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 7. APPROVED State */}
-        {status === 'APPROVED' && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface/50 border border-border-card p-5 rounded-xl">
-            <div>
-              <h3 className="font-bold text-primary-text text-base">Step 7: Capture PayPal Payment</h3>
-              <p className="text-xs text-secondary-text mt-1 max-w-xl">
-                Deliverables officially approved! Customer can now trigger payment capture to release funds from escrow to the freelancer.
-              </p>
-            </div>
-            {isCustomer && (
-              <button
-                onClick={handleCapturePayment}
-                disabled={actionLoading}
-                className="bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-7 py-3 rounded-full font-extrabold text-sm transition-all shadow-xl shadow-mint/25"
-              >
-                {actionLoading ? 'Capturing Funds...' : '💸 Capture & Release Payment'}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* 8. PAID State */}
-        {status === 'PAID' && (
-          <div className="p-5 rounded-xl bg-mint/10 border border-mint/20 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🎉</span>
-              <div>
-                <h3 className="font-bold text-mint text-base">Escrow Released & Project Completed</h3>
-                <p className="text-xs text-secondary-text mt-0.5">
-                  Payment of ${Number(project.budget).toLocaleString()} successfully captured via PayPal.
-                </p>
-              </div>
-            </div>
-            <Link
-              to={`/project/${projectId}/verify`}
-              className="text-xs text-mint hover:underline font-bold font-mono"
-            >
-              Audit Archive →
-            </Link>
+        {actionLoading && (
+          <div className="flex items-center gap-3 mt-4 pt-4" style={{ borderTop: '1px solid rgba(148,163,184,0.09)' }}>
+            <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#2dd4bf', borderTopColor: 'transparent' }} />
+            <span className="text-sm font-mono" style={{ color: '#94a3b8' }}>Processing...</span>
           </div>
         )}
       </div>
 
-      {/* Agreement Deliverables & Criteria Display */}
+      {/* Agreement Display */}
       {agreement && (
-        <div className="glass-card rounded-2xl p-6 lg:p-8 space-y-6 border border-border-card">
-          <div className="flex items-center justify-between border-b border-border-card pb-4">
+        <div style={C.card} className="space-y-5">
+          <div className="flex items-center justify-between" style={{ borderBottom: '1px solid rgba(148,163,184,0.09)', paddingBottom: '16px' }}>
             <div>
-              <h2 className="text-xl font-bold text-primary-text tracking-tight">Contractual Deliverables & Criteria</h2>
-              <p className="text-xs text-muted-text font-mono mt-0.5">
-                Version {agreement.version || 1} • AI Verified Architecture
-              </p>
+              <h2 className="text-lg font-black text-primary-text">Contractual Deliverables & Criteria</h2>
+              <p className="text-xs font-mono mt-0.5" style={{ color: '#4e6580' }}>Version {agreement.version || 1} • AI-Generated Scope</p>
             </div>
-            <span className="text-xs font-mono font-bold bg-mint/10 text-mint border border-mint/20 px-3 py-1 rounded-full">
-              SECURED SCOPE
+            <span className="text-xs font-mono font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(45,212,191,0.10)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.22)' }}>
+              SECURED
             </span>
           </div>
 
-          {/* Deliverables List */}
-          <div className="space-y-4">
-            {agreement.deliverables && agreement.deliverables.map((del, idx) => (
-              <div key={del.id || idx} className="bg-surface/40 border border-border-card rounded-xl p-5">
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <h3 className="font-bold text-primary-text text-base flex items-center gap-2.5">
-                    <span className="text-xs font-mono w-6 h-6 rounded-lg bg-mint/15 text-mint flex items-center justify-center font-bold">
-                      {idx + 1}
-                    </span>
-                    {del.title}
-                  </h3>
-                </div>
-                <p className="text-xs text-secondary-text mb-4 ml-8 leading-relaxed">
-                  {del.description}
-                </p>
-
-                {/* Criteria for this deliverable */}
-                <div className="ml-8 space-y-2">
-                  <div className="text-[10px] font-mono font-bold text-muted-text uppercase tracking-wider">
-                    Acceptance Criteria:
-                  </div>
-                  {agreement.acceptance_criteria &&
-                    agreement.acceptance_criteria
-                      .filter(c => c.deliverable_id === del.id || !c.deliverable_id)
-                      .map((crit, cIdx) => (
-                        <div
-                          key={crit.id || cIdx}
-                          className="flex items-start gap-2.5 text-xs text-secondary-text bg-card-bg/80 p-3 rounded-lg border border-border-card"
-                        >
-                          <span className="text-mint font-bold mt-0.5">✓</span>
-                          <span className="flex-1">{crit.criterion}</span>
-                        </div>
-                      ))}
+          {/* Deliverables */}
+          {Array.isArray(agreement.deliverables) && agreement.deliverables.map((del, idx) => (
+            <div key={del.id || idx} style={C.innerCard}>
+              <div className="flex items-start gap-3 mb-3">
+                <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black font-mono shrink-0" style={{ background: 'rgba(45,212,191,0.12)', color: '#2dd4bf' }}>{idx + 1}</span>
+                <div>
+                  <div className="font-bold text-primary-text text-sm">{del.title}</div>
+                  <div className="text-xs mt-0.5" style={{ color: '#94a3b8' }}>{del.description}</div>
                 </div>
               </div>
-            ))}
-          </div>
+              {Array.isArray(agreement.acceptance_criteria) && (
+                <div className="ml-9 space-y-2">
+                  <div style={{ ...C.label, marginBottom: '8px' }}>Acceptance Criteria</div>
+                  {agreement.acceptance_criteria
+                    .filter(c => c.deliverable_id === del.id || !c.deliverable_id)
+                    .map((crit, ci) => (
+                      <div key={crit.id || ci} className="flex items-start gap-2 text-xs" style={{ background: 'rgba(10,22,40,0.60)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: '10px', padding: '10px 14px' }}>
+                        <span style={{ color: '#2dd4bf', fontWeight: '700', marginTop: '1px' }}>✓</span>
+                        <span style={{ color: '#94a3b8' }}>{crit.criterion}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Fallback: raw agreement content */}
+          {!Array.isArray(agreement.deliverables) && (
+            <div style={C.innerCard}>
+              <pre className="text-xs whitespace-pre-wrap font-sans" style={{ color: '#94a3b8', margin: 0 }}>
+                {typeof agreement === 'object' ? JSON.stringify(agreement, null, 2) : String(agreement)}
+              </pre>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Modal: Assign Freelancer */}
+      {/* Assign Freelancer Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4">
-          <div className="glass-card rounded-2xl p-7 max-w-md w-full shadow-2xl border border-border-subtle">
-            <h3 className="text-lg font-bold text-primary-text mb-2">Assign Freelancer</h3>
-            <p className="text-xs text-secondary-text mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(12px)' }}>
+          <div style={{ ...C.card, maxWidth: '480px', width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.60)' }}>
+            <h3 className="text-lg font-black text-primary-text mb-1">Assign Freelancer</h3>
+            <p className="text-xs mb-5" style={{ color: '#94a3b8' }}>
               Enter the registered email of the freelancer to grant workspace and submission access.
             </p>
             <form onSubmit={handleAssignFreelancer} className="space-y-4">
               <input
-                type="email"
-                required
-                placeholder="freelancer@demo.com"
-                value={freelancerEmail}
-                onChange={(e) => setFreelancerEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-card text-primary-text placeholder-muted-text text-sm focus:outline-none focus:border-mint focus:ring-1 focus:ring-mint"
+                type="email" required placeholder="freelancer@example.com"
+                value={freelancerEmail} onChange={(e) => setFreelancerEmail(e.target.value)}
+                style={C.inputStyle}
+                onFocus={(e) => { e.target.style.borderColor = 'rgba(45,212,191,0.5)'; }}
+                onBlur={(e) => { e.target.style.borderColor = 'rgba(148,163,184,0.14)'; }}
               />
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAssignModal(false)}
-                  className="px-4 py-2 rounded-xl text-secondary-text hover:text-primary-text text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={actionLoading}
-                  className="bg-gradient-to-r from-mint to-cyan-accent text-primary-bg px-6 py-2.5 rounded-full text-xs font-bold transition-all shadow-md shadow-mint/20"
-                >
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={() => setShowAssignModal(false)} style={C.btnOutline}>Cancel</button>
+                <button type="submit" disabled={actionLoading} style={C.btn}>
                   {actionLoading ? 'Assigning...' : 'Confirm Assignment'}
                 </button>
               </div>

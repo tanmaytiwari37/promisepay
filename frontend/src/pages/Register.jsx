@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const inputStyle = {
+  background: 'rgba(19,34,54,0.8)',
+  border: '1px solid rgba(148,163,184,0.15)',
+  color: '#f1f5f9',
+  outline: 'none',
+  width: '100%',
+  padding: '12px 16px',
+  borderRadius: '12px',
+  fontSize: '14px',
+  transition: 'all 0.15s ease',
+};
+
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -12,7 +24,16 @@ export default function Register() {
   const navigate = useNavigate();
   const { register: authRegister } = useAuth();
 
-  const handleRegisterSubmit = async (e) => {
+  const handleFocus = (e) => {
+    e.target.style.borderColor = 'rgba(45,212,191,0.5)';
+    e.target.style.boxShadow = '0 0 0 3px rgba(45,212,191,0.08)';
+  };
+  const handleBlur = (e) => {
+    e.target.style.borderColor = 'rgba(148,163,184,0.15)';
+    e.target.style.boxShadow = 'none';
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !email || !password) {
       setError('Please fill in all fields.');
@@ -31,136 +52,121 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-primary-bg bg-tech-grid flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
-      {/* Decorative ambient background glows */}
-      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-mint/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-cyan-accent/10 rounded-full blur-[140px] pointer-events-none"></div>
+    <div
+      className="min-h-screen bg-tech-grid flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden"
+      style={{ backgroundColor: '#07111f' }}
+    >
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-[150px] pointer-events-none" style={{ background: 'rgba(45,212,191,0.07)' }} />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[130px] pointer-events-none" style={{ background: 'rgba(34,211,238,0.06)' }} />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Header Branding */}
+        {/* Branding */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-3 mb-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-mint to-cyan-accent flex items-center justify-center text-primary-bg font-extrabold text-base shadow-lg shadow-mint/20 group-hover:scale-105 transition-transform">
+          <Link to="/" className="inline-flex items-center gap-3 mb-4 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-mint to-cyan-accent flex items-center justify-center text-primary-bg font-black text-sm shadow-lg shadow-mint/20 group-hover:scale-105 transition-transform">
               PP
             </div>
-            <span className="text-2xl font-bold tracking-tight text-primary-text font-mono">
+            <span className="text-2xl font-black tracking-tight text-primary-text font-mono">
               PROMISE<span className="text-mint">PAY</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-extrabold text-primary-text tracking-tight">Create an Account</h1>
-          <p className="text-secondary-text text-sm mt-1">Start agreeing and transacting with complete trust</p>
+          <h1 className="text-2xl font-black text-primary-text tracking-tight">Create an Account</h1>
+          <p className="text-secondary-text text-sm mt-1.5">Start agreeing and transacting with complete trust</p>
         </div>
 
         {/* Card */}
-        <div className="glass-card rounded-2xl p-8 shadow-2xl border border-border-subtle">
+        <div className="glass-card rounded-2xl p-8 shadow-2xl shadow-black/60">
           {error && (
-            <div className="mb-5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5">
-              <span className="text-base leading-none">⚠️</span>
+            <div className="mb-5 p-4 rounded-xl flex items-start gap-3 text-sm"
+              style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.20)', color: '#f87171' }}>
+              <span className="shrink-0">⚠</span>
               <span className="flex-1">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleRegisterSubmit} className="space-y-4">
-            {/* Role Selection */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Role selector */}
             <div>
               <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-2 font-mono">
                 Select Your Role
               </label>
               <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole('customer')}
-                  className={`p-3.5 rounded-xl border text-left transition-all ${
-                    role === 'customer'
-                      ? 'border-mint bg-mint/10 text-mint'
-                      : 'border-border-card bg-surface/60 text-secondary-text hover:text-primary-text'
-                  }`}
-                >
-                  <div className="text-lg mb-1">💼</div>
-                  <div className="text-xs font-bold">Customer</div>
-                  <div className="text-[11px] text-muted-text mt-0.5">Fund & review deliverables</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setRole('freelancer')}
-                  className={`p-3.5 rounded-xl border text-left transition-all ${
-                    role === 'freelancer'
-                      ? 'border-mint bg-mint/10 text-mint'
-                      : 'border-border-card bg-surface/60 text-secondary-text hover:text-primary-text'
-                  }`}
-                >
-                  <div className="text-lg mb-1">💻</div>
-                  <div className="text-xs font-bold">Freelancer</div>
-                  <div className="text-[11px] text-muted-text mt-0.5">Submit work & get paid</div>
-                </button>
+                {[
+                  { value: 'customer', icon: '💼', label: 'Customer', sub: 'Fund & review deliverables' },
+                  { value: 'freelancer', icon: '💻', label: 'Freelancer', sub: 'Submit work & get paid' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRole(opt.value)}
+                    className="p-4 rounded-xl text-left transition-all"
+                    style={{
+                      border: role === opt.value ? '1px solid rgba(45,212,191,0.5)' : '1px solid rgba(148,163,184,0.12)',
+                      background: role === opt.value ? 'rgba(45,212,191,0.08)' : 'rgba(19,34,54,0.60)',
+                    }}
+                  >
+                    <div className="text-xl mb-1.5">{opt.icon}</div>
+                    <div className="text-xs font-bold" style={{ color: role === opt.value ? '#2dd4bf' : '#f1f5f9' }}>{opt.label}</div>
+                    <div className="text-[11px] text-muted-text mt-0.5">{opt.sub}</div>
+                  </button>
+                ))}
               </div>
             </div>
 
+            {/* Full Name */}
             <div>
-              <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-1.5 font-mono">
-                Full Name
-              </label>
+              <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-2 font-mono">Full Name</label>
               <input
-                type="text"
-                required
-                placeholder="Alex Morgan"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-card text-primary-text placeholder-muted-text text-sm focus:outline-none focus:border-mint focus:ring-1 focus:ring-mint transition-all"
+                type="text" required placeholder="Alex Morgan"
+                value={name} onChange={(e) => setName(e.target.value)}
+                style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}
               />
             </div>
 
+            {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-1.5 font-mono">
-                Email Address
-              </label>
+              <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-2 font-mono">Email Address</label>
               <input
-                type="email"
-                required
-                placeholder="name@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-card text-primary-text placeholder-muted-text text-sm focus:outline-none focus:border-mint focus:ring-1 focus:ring-mint transition-all"
+                type="email" required placeholder="name@company.com"
+                value={email} onChange={(e) => setEmail(e.target.value)}
+                style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}
               />
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-1.5 font-mono">
-                Password
-              </label>
+              <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-2 font-mono">Password</label>
               <input
-                type="password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-card text-primary-text placeholder-muted-text text-sm focus:outline-none focus:border-mint focus:ring-1 focus:ring-mint transition-all"
+                type="password" required placeholder="••••••••"
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}
               />
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 bg-gradient-to-r from-mint to-cyan-accent hover:opacity-95 text-primary-bg font-extrabold py-3.5 px-4 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-mint/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all"
+              style={{
+                background: loading ? 'rgba(45,212,191,0.5)' : 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)',
+                color: '#07111f',
+                boxShadow: '0 8px 32px -6px rgba(45,212,191,0.30)',
+                cursor: loading ? 'not-allowed' : 'pointer',
+              }}
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-primary-bg border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   <span>Creating Account...</span>
                 </>
-              ) : (
-                'Create Account'
-              )}
+              ) : 'Create Account'}
             </button>
           </form>
 
-          {/* Login Link */}
           <p className="mt-6 text-center text-xs text-secondary-text">
             Already have an account?{' '}
-            <Link to="/login" className="text-mint hover:underline font-semibold">
-              Sign in
-            </Link>
+            <Link to="/login" className="text-mint hover:underline font-semibold">Sign in</Link>
           </p>
         </div>
       </div>

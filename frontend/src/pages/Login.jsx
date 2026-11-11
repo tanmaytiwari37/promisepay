@@ -35,22 +35,20 @@ export default function Login() {
     const creds = role === 'customer'
       ? { email: 'client@example.com', password: 'securepassword123' }
       : { email: 'freelancer@demo.com', password: 'demo1234' };
-    
     setEmail(creds.email);
     setPassword(creds.password);
     try {
       await authLogin(creds.email, creds.password);
       navigate('/dashboard');
     } catch {
-      // Fallback try customer@demo.com
       try {
-        const altCreds = role === 'customer'
+        const alt = role === 'customer'
           ? { email: 'customer@demo.com', password: 'demo1234' }
           : { email: 'freelancer@demo.com', password: 'demo1234' };
-        await authLogin(altCreds.email, altCreds.password);
+        await authLogin(alt.email, alt.password);
         navigate('/dashboard');
       } catch (innerErr) {
-        setError(innerErr.message || 'Demo login failed');
+        setError(innerErr.message || 'Demo login failed — ensure the backend is running.');
       }
     } finally {
       setLoading(false);
@@ -58,38 +56,43 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-primary-bg bg-tech-grid flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
-      {/* Decorative ambient background glows */}
-      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-mint/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-cyan-accent/10 rounded-full blur-[140px] pointer-events-none"></div>
+    <div
+      className="min-h-screen bg-tech-grid flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden"
+      style={{ backgroundColor: '#07111f' }}
+    >
+      {/* Ambient glows */}
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-[150px] pointer-events-none" style={{ background: 'rgba(45,212,191,0.07)' }} />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[130px] pointer-events-none" style={{ background: 'rgba(34,211,238,0.06)' }} />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Header Branding */}
+        {/* Branding */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-3 mb-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-mint to-cyan-accent flex items-center justify-center text-primary-bg font-extrabold text-base shadow-lg shadow-mint/20 group-hover:scale-105 transition-transform">
+          <Link to="/" className="inline-flex items-center gap-3 mb-4 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-mint to-cyan-accent flex items-center justify-center text-primary-bg font-black text-sm shadow-lg shadow-mint/20 group-hover:scale-105 transition-transform">
               PP
             </div>
-            <span className="text-2xl font-bold tracking-tight text-primary-text font-mono">
+            <span className="text-2xl font-black tracking-tight text-primary-text font-mono">
               PROMISE<span className="text-mint">PAY</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-extrabold text-primary-text tracking-tight">Access Your Workspace</h1>
-          <p className="text-secondary-text text-sm mt-1">Sign in to manage agreements, audits, and payments</p>
+          <h1 className="text-2xl font-black text-primary-text tracking-tight">Access Your Workspace</h1>
+          <p className="text-secondary-text text-sm mt-1.5">Sign in to manage agreements, audits, and payments</p>
         </div>
 
         {/* Card */}
-        <div className="glass-card rounded-2xl p-8 shadow-2xl border border-border-subtle">
+        <div className="glass-card rounded-2xl p-8 shadow-2xl shadow-black/60">
           {error && (
-            <div className="mb-5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5">
-              <span className="text-base leading-none">⚠️</span>
+            <div className="mb-5 p-4 rounded-xl flex items-start gap-3 text-sm"
+              style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.20)', color: '#f87171' }}>
+              <span className="text-base leading-none shrink-0">⚠</span>
               <span className="flex-1">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
+          <form onSubmit={handleLoginSubmit} className="space-y-5">
+            {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-1.5 font-mono">
+              <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider mb-2 font-mono">
                 Email Address
               </label>
               <input
@@ -98,12 +101,21 @@ export default function Login() {
                 placeholder="name@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-card text-primary-text placeholder-muted-text text-sm focus:outline-none focus:border-mint focus:ring-1 focus:ring-mint transition-all"
+                className="w-full px-4 py-3 rounded-xl text-sm transition-all"
+                style={{
+                  background: 'rgba(19,34,54,0.8)',
+                  border: '1px solid rgba(148,163,184,0.15)',
+                  color: '#f1f5f9',
+                  outline: 'none',
+                }}
+                onFocus={(e) => { e.target.style.borderColor = 'rgba(45,212,191,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(45,212,191,0.08)'; }}
+                onBlur={(e) => { e.target.style.borderColor = 'rgba(148,163,184,0.15)'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
+            {/* Password */}
             <div>
-              <div className="flex justify-between items-center mb-1.5">
+              <div className="flex justify-between items-center mb-2">
                 <label className="block text-xs font-semibold text-secondary-text uppercase tracking-wider font-mono">
                   Password
                 </label>
@@ -121,18 +133,33 @@ export default function Login() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-surface border border-border-card text-primary-text placeholder-muted-text text-sm focus:outline-none focus:border-mint focus:ring-1 focus:ring-mint transition-all"
+                className="w-full px-4 py-3 rounded-xl text-sm transition-all"
+                style={{
+                  background: 'rgba(19,34,54,0.8)',
+                  border: '1px solid rgba(148,163,184,0.15)',
+                  color: '#f1f5f9',
+                  outline: 'none',
+                }}
+                onFocus={(e) => { e.target.style.borderColor = 'rgba(45,212,191,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(45,212,191,0.08)'; }}
+                onBlur={(e) => { e.target.style.borderColor = 'rgba(148,163,184,0.15)'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 bg-gradient-to-r from-mint to-cyan-accent hover:opacity-95 text-primary-bg font-extrabold py-3.5 px-4 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-mint/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-2 py-3.5 px-4 rounded-xl font-black text-sm transition-all duration-200 flex items-center justify-center gap-2"
+              style={{
+                background: loading ? 'rgba(45,212,191,0.5)' : 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)',
+                color: '#07111f',
+                boxShadow: '0 8px 32px -6px rgba(45,212,191,0.30)',
+                cursor: loading ? 'not-allowed' : 'pointer',
+              }}
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-primary-bg border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   <span>Authenticating...</span>
                 </>
               ) : (
@@ -142,43 +169,47 @@ export default function Login() {
           </form>
 
           {/* Divider */}
-          <div className="relative my-6 text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border-card"></div>
-            </div>
-            <span className="relative px-3 bg-card-bg text-xs font-mono uppercase tracking-wider text-muted-text">
+          <div className="relative my-6 flex items-center">
+            <div className="flex-1 border-t" style={{ borderColor: 'rgba(148,163,184,0.12)' }} />
+            <span className="px-4 text-xs font-mono uppercase tracking-wider text-muted-text" style={{ background: 'transparent' }}>
               1-Click Demo Sandbox
             </span>
+            <div className="flex-1 border-t" style={{ borderColor: 'rgba(148,163,184,0.12)' }} />
           </div>
 
-          {/* Quick Demo Access Buttons */}
+          {/* Demo buttons */}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => executeDemoLogin('customer')}
               disabled={loading}
-              className="p-3.5 rounded-xl bg-surface/80 hover:bg-surface border border-border-card text-left transition-all hover:border-mint/50 group"
+              className="p-4 rounded-xl text-left transition-all group"
+              style={{ background: 'rgba(19,34,54,0.60)', border: '1px solid rgba(148,163,184,0.12)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.35)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(148,163,184,0.12)'; }}
             >
-              <div className="text-xs font-bold text-primary-text group-hover:text-mint flex items-center gap-1.5">
+              <div className="text-xs font-bold text-primary-text flex items-center gap-1.5 mb-0.5">
                 <span>💼</span> Customer Demo
               </div>
-              <div className="text-[11px] text-muted-text mt-0.5 font-mono truncate">client@example.com</div>
+              <div className="text-[11px] text-muted-text font-mono truncate">client@example.com</div>
             </button>
 
             <button
               type="button"
               onClick={() => executeDemoLogin('freelancer')}
               disabled={loading}
-              className="p-3.5 rounded-xl bg-surface/80 hover:bg-surface border border-border-card text-left transition-all hover:border-mint/50 group"
+              className="p-4 rounded-xl text-left transition-all group"
+              style={{ background: 'rgba(19,34,54,0.60)', border: '1px solid rgba(148,163,184,0.12)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.35)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(148,163,184,0.12)'; }}
             >
-              <div className="text-xs font-bold text-primary-text group-hover:text-mint flex items-center gap-1.5">
+              <div className="text-xs font-bold text-primary-text flex items-center gap-1.5 mb-0.5">
                 <span>💻</span> Freelancer Demo
               </div>
-              <div className="text-[11px] text-muted-text mt-0.5 font-mono truncate">freelancer@demo.com</div>
+              <div className="text-[11px] text-muted-text font-mono truncate">freelancer@demo.com</div>
             </button>
           </div>
 
-          {/* Register Link */}
           <p className="mt-6 text-center text-xs text-secondary-text">
             Need an account?{' '}
             <Link to="/register" className="text-mint hover:underline font-semibold">
