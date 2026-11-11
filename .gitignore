@@ -27,3 +27,7 @@ dist-ssr/
 uploads/
 *.log
 .DS_Store
+
+# Tool & agent caches
+.serena/
+.playwright-mcp/
