@@ -10,6 +10,5 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
-    role = Column(String, default="client")  # client | freelancer
+    role = Column(String, default="customer")  # customer | freelancer
     created_at = Column(DateTime, default=datetime.utcnow)
-

@@ -9,8 +9,11 @@ class Payment(Base):
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
     paypal_order_id = Column(String, nullable=True, index=True)
-    paypal_capture_id = Column(String, nullable=True)
+    authorization_id = Column(String, nullable=True)
+    capture_id = Column(String, nullable=True)
     amount = Column(Float, nullable=False, default=0.0)
-    status = Column(String, default="PAYMENT_AUTHORIZED")  # PAYMENT_AUTHORIZED | PAID | PAYMENT_FAILED
+    currency = Column(String, default="USD")
+    status = Column(String, default="PAYMENT_AUTHORIZED")
+    mode = Column(String, default="mock")  # mock | sandbox
+    idempotency_key = Column(String, nullable=True, unique=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-

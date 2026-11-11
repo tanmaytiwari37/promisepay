@@ -10,9 +10,10 @@ class Project(Base):
     title = Column(String, nullable=False)
     description = Column(String, nullable=True)
     budget = Column(Float, nullable=False, default=0.0)
+    currency = Column(String, default="USD")
+    deadline = Column(String, nullable=True)
     status = Column(String, default="DRAFT", index=True)
-    client_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     freelancer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
