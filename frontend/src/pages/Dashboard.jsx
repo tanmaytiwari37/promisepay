@@ -128,37 +128,19 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
-            <span className="text-[11px] font-mono text-mint uppercase tracking-widest">Secure Escrow Active</span>
-          </div>
-          <h1 className="text-3xl font-black text-primary-text tracking-tight">
-            Good day, {firstName}.
-          </h1>
-          <p className="text-secondary-text text-sm mt-1.5">
-            {user?.role === 'customer'
-              ? "Here's the current state of your project agreements and verification audits."
-              : "Here's your active deliverables, pending submissions, and verified earnings."}
-          </p>
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
+          <span className="text-[11px] font-mono text-mint uppercase tracking-widest">Secure Escrow Active</span>
         </div>
-        {user?.role === 'customer' && (
-          <Link
-            to="/create-agreement"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm transition-all shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)',
-              color: '#07111f',
-              boxShadow: '0 6px 24px rgba(45,212,191,0.25)',
-            }}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-            </svg>
-            Create Agreement
-          </Link>
-        )}
+        <h1 className="text-3xl font-black text-primary-text tracking-tight">
+          Good day, {firstName}.
+        </h1>
+        <p className="text-secondary-text text-sm mt-1.5">
+          {user?.role === 'customer'
+            ? "Here's the current state of your project agreements and verification audits."
+            : "Here's your active deliverables, pending submissions, and verified earnings."}
+        </p>
       </div>
 
       {error && (
