@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+env/
+
+# Environment files
+.env
+.env.local
+
+# Python cache & build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+
+# Frontend build
+dist/
+dist-ssr/
+*.local
+
+# Uploads and temporary files
+uploads/
+*.log
+.DS_Store
+

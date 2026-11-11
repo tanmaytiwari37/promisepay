@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "title": "E-Commerce Landing Page",
+    "client": "Acme Corp",
+    "freelancer": "Alice Dev",
+    "budget": 1200,
+    "status": "IN_PROGRESS",
+    "deadline": "2026-11-20"
+  },
+  {
+    "id": 2,
+    "title": "Mobile App UI Audit",
+    "client": "Starlight Studio",
+    "freelancer": "Bob Design",
+    "budget": 850,
+    "status": "PENDING_APPROVAL",
+    "deadline": "2026-11-25"
+  },
+  {
+    "id": 3,
+    "title": "PayPal Payment Flow Integration",
+    "client": "FinTech Labs",
+    "freelancer": "Charlie Coder",
+    "budget": 2400,
+    "status": "APPROVED",
+    "deadline": "2026-11-15"
+  }
+]
+

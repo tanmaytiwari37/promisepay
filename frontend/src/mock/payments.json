@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "projectId": 1,
+    "paypalOrderId": "PAYPAL-ORD-101",
+    "amount": 1200,
+    "currency": "USD",
+    "status": "PAYMENT_AUTHORIZED"
+  },
+  {
+    "id": 2,
+    "projectId": 2,
+    "paypalOrderId": "PAYPAL-ORD-102",
+    "amount": 850,
+    "currency": "USD",
+    "status": "PENDING_APPROVAL"
+  },
+  {
+    "id": 3,
+    "projectId": 3,
+    "paypalOrderId": "PAYPAL-ORD-103",
+    "amount": 2400,
+    "currency": "USD",
+    "status": "PAID"
+  }
+]
+

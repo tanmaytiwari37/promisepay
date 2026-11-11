@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "projectId": 1,
+    "title": "Responsive Hero & Product Catalog",
+    "acceptanceCriteria": "Tested across Chrome, Safari and Firefox with 95+ score",
+    "status": "IN_PROGRESS"
+  },
+  {
+    "id": 2,
+    "projectId": 2,
+    "title": "Figma Heuristic Evaluation Report",
+    "acceptanceCriteria": "Complete 15-page slide deck with UX improvement action items",
+    "status": "PENDING_APPROVAL"
+  },
+  {
+    "id": 3,
+    "projectId": 3,
+    "title": "Authorize & Capture Webhook Endpoints",
+    "acceptanceCriteria": "Sandbox transactions pass automated end-to-end integration tests",
+    "status": "APPROVED"
+  }
+]
+
