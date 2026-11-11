@@ -15,6 +15,7 @@ from app.schemas.projects import (
 )
 from app.core.deps import get_current_user, get_project_participant
 from app.services.status import validate_status_transition
+from app.services.ai.agreement_generator import generate_agreement
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -124,6 +125,50 @@ def submit_for_approval(
     db.commit()
     db.refresh(project)
     return project
+
+
+@router.post("/{project_id}/agreement/generate")
+async def generate_project_agreement(
+    project: Project = Depends(get_project_participant),
+    db: Session = Depends(get_db)
+):
+    agreement = db.query(Agreement).filter(Agreement.project_id == project.id).first()
+    if not agreement:
+        agreement = Agreement(
+            project_id=project.id,
+            amount=project.budget,
+            deadline=project.deadline,
+            version=1
+        )
+        db.add(agreement)
+        db.commit()
+
+    generated = await generate_agreement(
+        description=project.description or project.title,
+        budget=project.budget,
+        deadline=project.deadline or ""
+    )
+
+    agreement.deliverables = [d.model_dump() for d in generated.deliverables]
+    agreement.acceptance_criteria = [c.model_dump() for c in generated.acceptance_criteria]
+    agreement.amount = generated.amount
+    agreement.deadline = generated.deadline
+    agreement.version += 1
+
+    project.title = generated.title
+    project.budget = generated.amount
+    project.deadline = generated.deadline
+
+    # Reset any approvals since terms were re-generated
+    db.query(Approval).filter(
+        Approval.project_id == project.id,
+        Approval.type == "agreement"
+    ).delete()
+
+    db.commit()
+    db.refresh(agreement)
+    db.refresh(project)
+    return generated
 
 
 @router.get("/{project_id}/agreement", response_model=AgreementResponse)
