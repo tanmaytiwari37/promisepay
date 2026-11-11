@@ -122,6 +122,7 @@ def test_full_promisepay_demo_flow(client):
     dup_cap = client.post(f"/projects/{pid}/payment/capture", headers=c_headers)
     assert dup_cap.status_code == 200
     assert dup_cap.json()["project_status"] == "PAID"
+    assert dup_cap.json() == cap_res.json()
 
     # 13. Non-participant access is forbidden (403)
     outsider_login = client.post("/auth/login", json={"email": "customer@demo.com", "password": "demo1234"})

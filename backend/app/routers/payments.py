@@ -186,16 +186,15 @@ async def capture_project_payment(
             detail="No authorized payment exists to capture"
         )
 
-    # Idempotent capture: if already captured and paid, return safely without charging twice
-    if payment.status == "PAID" and payment.capture_id and project.status == "PAID":
+    # Idempotent capture: if already captured, return stored capture and never call PayPal again
+    if payment.capture_id and payment.status == "PAID":
         return {
             "capture_id": payment.capture_id,
             "payment_status": payment.status,
             "project_status": project.status,
             "amount": payment.amount,
             "currency": payment.currency,
-            "mode": payment.mode,
-            "message": "Payment was already captured successfully"
+            "mode": payment.mode
         }
 
     # Strict check: project must be APPROVED
