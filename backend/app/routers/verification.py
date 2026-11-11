@@ -27,10 +27,10 @@ async def verify_project_delivery(
 ):
     # Must have an agreement
     agreement = db.query(Agreement).filter(Agreement.project_id == project_id).first()
-    if not agreement or not agreement.acceptance_criteria:
+    if not agreement or agreement.acceptance_criteria is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Project has no agreement or acceptance criteria to verify against"
+            detail="Project has no agreement to verify against"
         )
 
     # Get latest submission
@@ -49,6 +49,8 @@ async def verify_project_delivery(
     project.status = "UNDER_REVIEW"
 
     criteria = agreement.acceptance_criteria if isinstance(agreement.acceptance_criteria, list) else []
+    if not criteria:
+        criteria = [{"id": "crit-1", "criterion": "Deliver project according to scope"}]
 
     verification_result = await verify_submission_evidence(
         criteria=criteria,

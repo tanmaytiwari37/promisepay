@@ -12,6 +12,7 @@ from app.schemas.projects import (
     AssignFreelancer,
     AgreementResponse,
     AgreementUpdate,
+    ReviewDecision,
 )
 from app.core.deps import get_current_user, get_project_participant
 from app.services.status import validate_status_transition
@@ -284,3 +285,51 @@ def approve_agreement(
         "customer_approved": bool(customer_appr),
         "freelancer_approved": bool(freelancer_appr)
     }
+
+
+@router.post("/{project_id}/review")
+def review_project_delivery(
+    review_in: ReviewDecision,
+    project: Project = Depends(get_project_participant),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if project.customer_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the project customer can review and approve delivery"
+        )
+
+    decision = review_in.decision.lower().strip()
+    if decision not in ["approve", "request_changes"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Decision must be 'approve' or 'request_changes'"
+        )
+
+    if decision == "request_changes":
+        validate_status_transition(project.status, "CHANGES_REQUESTED")
+        project.status = "CHANGES_REQUESTED"
+        is_approved = False
+    else:
+        validate_status_transition(project.status, "APPROVED")
+        project.status = "APPROVED"
+        is_approved = True
+
+    approval = Approval(
+        project_id=project.id,
+        user_id=current_user.id,
+        type="review",
+        approved=is_approved
+    )
+    db.add(approval)
+    db.commit()
+    db.refresh(project)
+
+    return {
+        "project_id": project.id,
+        "decision": decision,
+        "status": project.status,
+        "comment": review_in.comment
+    }
+
