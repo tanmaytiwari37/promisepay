@@ -62,3 +62,4 @@ class ReviewDecision(BaseModel):
 class DashboardSummary(BaseModel):
     total_projects: int
     status_counts: Dict[str, int]
+

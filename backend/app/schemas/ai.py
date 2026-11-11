@@ -36,3 +36,4 @@ class VerificationResult(BaseModel):
     overall_summary: str
     improvement_suggestions: List[str] = []
     limitations: List[str] = []
+

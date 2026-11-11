@@ -71,3 +71,4 @@ def get_project_participant(
             detail="Access denied: You are not a participant in this project"
         )
     return project
+

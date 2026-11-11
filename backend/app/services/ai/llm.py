@@ -49,3 +49,4 @@ async def call_llm_json(prompt: str, system_prompt: str = "") -> Optional[dict]:
         status_code=502,
         detail=f"AI service unavailable: {last_error}"
     )
+

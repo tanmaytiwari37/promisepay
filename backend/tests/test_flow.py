@@ -1,17 +1,16 @@
+import uuid
 import pytest
 from starlette.testclient import TestClient
-from app.main import app
-
-
-@pytest.fixture
-def client():
-    return TestClient(app)
 
 
 def test_full_promisepay_demo_flow(client):
-    # 1. Register new customer and freelancer
+    # 1. Register new customer and freelancer (UUID emails to avoid collisions on rerun)
+    _uid = uuid.uuid4().hex[:8]
+    customer_email = f"customer_{_uid}@example.com"
+    freelancer_email = f"freelancer_{_uid}@example.com"
+
     reg_c = client.post("/auth/register", json={
-        "email": "test_customer_flow@example.com",
+        "email": customer_email,
         "password": "password123",
         "name": "Flow Customer",
         "role": "customer"
@@ -19,7 +18,7 @@ def test_full_promisepay_demo_flow(client):
     assert reg_c.status_code == 201
 
     reg_f = client.post("/auth/register", json={
-        "email": "test_freelancer_flow@example.com",
+        "email": freelancer_email,
         "password": "password123",
         "name": "Flow Freelancer",
         "role": "freelancer"
@@ -27,12 +26,12 @@ def test_full_promisepay_demo_flow(client):
     assert reg_f.status_code == 201
 
     # Login both
-    c_login = client.post("/auth/login", json={"email": "test_customer_flow@example.com", "password": "password123"})
+    c_login = client.post("/auth/login", json={"email": customer_email, "password": "password123"})
     assert c_login.status_code == 200
     c_token = c_login.json()["access_token"]
     c_headers = {"Authorization": f"Bearer {c_token}"}
 
-    f_login = client.post("/auth/login", json={"email": "test_freelancer_flow@example.com", "password": "password123"})
+    f_login = client.post("/auth/login", json={"email": freelancer_email, "password": "password123"})
     assert f_login.status_code == 200
     f_token = f_login.json()["access_token"]
     f_headers = {"Authorization": f"Bearer {f_token}"}
@@ -50,7 +49,7 @@ def test_full_promisepay_demo_flow(client):
 
     # 3. Assign freelancer
     assign_res = client.post(f"/projects/{pid}/assign-freelancer", json={
-        "email": "test_freelancer_flow@example.com"
+        "email": freelancer_email
     }, headers=c_headers)
     assert assign_res.status_code == 200
     assert assign_res.json()["freelancer_id"] is not None
@@ -133,3 +132,4 @@ def test_full_promisepay_demo_flow(client):
 
     forbidden_sub = client.get(f"/projects/{pid}/submissions", headers=outsider_headers)
     assert forbidden_sub.status_code == 403
+

@@ -26,3 +26,4 @@ def get_dashboard_summary(
         "total_projects": len(projects),
         "status_counts": counts
     }
+
