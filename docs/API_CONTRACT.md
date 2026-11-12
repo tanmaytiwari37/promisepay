@@ -84,6 +84,24 @@ Complete REST API specification with authentication requirements and example req
 }
 ```
 
+### `POST /auth/google`
+- **Auth**: None
+- **Request Body**:
+```json
+{
+  "id_token": "<firebase id token>",
+  "role": "customer"
+}
+```
+- **Response `200 OK`**:
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+- **Notes**: Role is used only when the user is created the first time. The Firebase ID token must have a verified email.
+
 ---
 
 ## 3. Projects & Agreements

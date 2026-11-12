@@ -985,3 +985,58 @@ async def test_paypal_capture_authorization_sandbox_mocked():
         settings.PAYPAL_BASE_URL = original_base
         orders._token_cache["token"] = None
         orders._token_cache["expires_at"] = 0
+
+
+# Firebase Google Login Tests
+
+def test_google_login_creates_user_and_returns_jwt(client, monkeypatch):
+    """Google login via Firebase creates user and returns JWT"""
+    from app.routers import auth as auth_router
+    from app.services import firebase_auth as firebase_auth_module
+
+    # Mock the verify_firebase_token function
+    def mock_verify(token):
+        if token == "bad":
+            return None
+        if token == "good":
+            return {"email": "Google.User@example.com", "email_verified": True, "name": "G User"}
+        return None
+
+    monkeypatch.setattr(auth_router, "verify_firebase_token", mock_verify)
+    monkeypatch.setattr(firebase_auth_module, "verify_firebase_token", mock_verify)
+
+    # Invalid token should return 401
+    assert client.post("/auth/google", json={"id_token": "bad"}).status_code == 401
+
+    # Valid token should create user and return JWT
+    res = client.post("/auth/google", json={"id_token": "good", "role": "freelancer"})
+    assert res.status_code == 200
+    token = res.json()["access_token"]
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert me.json()["email"] == "google.user@example.com"
+    assert me.json()["role"] == "freelancer"
+
+    # Second login with same email should return existing user's JWT
+    res2 = client.post("/auth/google", json={"id_token": "good", "role": "customer"})
+    assert res2.status_code == 200
+    token2 = res2.json()["access_token"]
+    me2 = client.get("/auth/me", headers={"Authorization": f"Bearer {token2}"})
+    assert me2.json()["email"] == "google.user@example.com"
+    # Role should remain as originally set (freelancer)
+    assert me2.json()["role"] == "freelancer"
+
+
+def test_google_login_requires_verified_email(client, monkeypatch):
+    """Google login rejects unverified email"""
+    from app.routers import auth as auth_router
+    from app.services import firebase_auth as firebase_auth_module
+
+    def mock_verify(token):
+        return {"email": "unverified@example.com", "email_verified": False, "name": "Unverified"}
+
+    monkeypatch.setattr(auth_router, "verify_firebase_token", mock_verify)
+    monkeypatch.setattr(firebase_auth_module, "verify_firebase_token", mock_verify)
+
+    res = client.post("/auth/google", json={"id_token": "any", "role": "customer"})
+    assert res.status_code == 400
+    assert "verified email" in res.json()["detail"].lower()

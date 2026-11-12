@@ -15,6 +15,11 @@ class UserLogin(BaseModel):
     password: str
 
 
+class GoogleLogin(BaseModel):
+    id_token: str            # Firebase ID token from the browser
+    role: str = "customer"   # only used when the account is created the first time
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"

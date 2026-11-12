@@ -276,7 +276,7 @@
 ## Phase 7: FINAL QA (COMPLETE)
 
 ### Checks Performed
-- **Full pytest suite**: 24 tests passed (no regressions)
+- **Full pytest suite**: 26 tests passed (no regressions)
 - **Smoke test**: Complete end-to-end flow verified (register → project → agreement → AI generate → dual approve → PayPal order → authorize → submit → verify → review approve → capture → PAID)
 - **Secret scan**: No hardcoded secrets found
   - All API keys loaded from environment variables via `settings`
@@ -290,9 +290,9 @@
 - **File upload security**: Path traversal prevention, sanitization, type/size limits
 
 ### Test Results
-- **24 tests passed** (all phases combined)
+- **26 tests passed** (all phases combined)
 - **0 failures, 0 errors**
-- Coverage: Auth, Projects, Agreements, AI, PayPal, Submissions, Verification, Review, Capture, Idempotency, Security
+- Coverage: Auth (email/password + Google/Firebase), Projects, Agreements, AI, PayPal, Submissions, Verification, Review, Capture, Idempotency, Security
 
 ### Blockers
 - None
@@ -309,3 +309,44 @@
 ---
 
 ## 🎉 ALL PHASES COMPLETE - READY FOR HACKATHON SUBMISSION
+
+---
+
+## Bonus: Firebase Google Login (Part 3 Implemented)
+
+### Changes Made
+- **Dependencies** (`backend/requirements.txt`):
+  - Added `google-auth>=2.29.0` and `requests>=2.31.0`
+- **Config** (`.env.example`, `backend/app/core/config.py`):
+  - Added `FIREBASE_PROJECT_ID` environment variable
+- **Schemas** (`backend/app/schemas/auth.py`):
+  - Added `GoogleLogin` model with `id_token` and `role` fields
+- **Service** (`backend/app/services/firebase_auth.py` - new):
+  - `verify_firebase_token()` using google-auth library
+  - Verifies Firebase ID token signature, audience, and issuer
+  - No service-account secret needed (uses Google's public keys)
+- **Router** (`backend/app/routers/auth.py`):
+  - Added `POST /auth/google` endpoint
+  - Verifies Firebase token, finds/creates user, returns JWT
+  - Role used only on first account creation
+- **API Contract** (`docs/API_CONTRACT.md`):
+  - Documented new `/auth/google` endpoint
+- **Tests** (`backend/tests/test_flow.py`):
+  - `test_google_login_creates_user_and_returns_jwt` - full flow with mocked Firebase
+  - `test_google_login_requires_verified_email` - rejects unverified emails
+- **Test Results**: 26 tests passed (24 original + 2 new)
+
+### How It Works
+1. Frontend gets Firebase ID token from Google popup
+2. Sends to `POST /auth/google` with `id_token` and `role`
+3. Backend verifies token against Firebase project ID
+4. Finds or creates user (with random unguessable password for Google users)
+5. Returns standard JWT for all other endpoints
+6. Role dropdown on frontend lets user choose customer/freelancer on first login
+
+### Decisions
+- Uses `google-auth` library (official Google library) - no service account needed
+- Verifies `email_claimed` and `audience` match our Firebase project ID
+- Google users get random passwords - they can only sign in via Google
+- Role is only used on first account creation; subsequent logins preserve original role
+- Frontend integration (Part 4) still needed: connect Google popup to `/auth/google` endpoint

@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:5173"
     UPLOAD_DIR: str = "uploads"
 
+    # Firebase project ID (public value), used to verify Google sign-in tokens
+    FIREBASE_PROJECT_ID: Optional[str] = None
+
     class Config:
         env_file = ".env"
         extra = "ignore"
