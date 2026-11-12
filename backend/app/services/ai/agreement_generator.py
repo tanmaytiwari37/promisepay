@@ -11,7 +11,7 @@ Agreed Budget: ${budget}
 Target Deadline: {deadline}
 
 Generate a clear, fair freelance agreement breaking down the description into:
-1. title: A concise project title.
+1. title: A concise project title (use the project title if provided, otherwise derive from description).
 2. summary: A professional 2-3 sentence overview of the scope.
 3. deliverables: An array of objects with 'id', 'title', and 'description'.
 4. acceptance_criteria: An array of verifiable criteria with 'id', 'deliverable_id', and 'criterion'.
@@ -24,54 +24,37 @@ Generate a clear, fair freelance agreement breaking down the description into:
     raw_json = await call_llm_json(prompt, system_prompt)
 
     if not raw_json:
-        # Realistic canned fallback for mock mode or offline demo - Bakery Website project
+        # Honest mock fallback: build from the project's actual title, description, budget, and deadline
+        # Derive a sensible title from the description if needed
+        project_title = description.strip().split('\n')[0][:80] if description else "Untitled Project"
+
         raw_json = {
-            "title": "Bakery Website",
-            "summary": f"Build a 3-page website (Home, Menu, Contact) for Riya's Bake House with a working contact form, within budget of ${budget}.",
+            "title": project_title,
+            "summary": f"Project: {description[:200]}{'...' if len(description) > 200 else ''}. Budget: ${budget:,.2f}. Deadline: {deadline or 'Not specified'}.",
             "deliverables": [
                 {
                     "id": "del-1",
-                    "title": "Home Page",
-                    "description": "Hero section with bakery story, featured items, and call-to-action."
-                },
-                {
-                    "id": "del-2",
-                    "title": "Menu Page",
-                    "description": "Lists all bakery items with prices, descriptions, and dietary tags."
-                },
-                {
-                    "id": "del-3",
-                    "title": "Contact Page with Form",
-                    "description": "Contact form that sends messages to the bakery's email."
+                    "title": "Core Deliverable",
+                    "description": description[:300] if description else "Complete the project as described."
                 }
             ],
             "acceptance_criteria": [
                 {
                     "id": "crit-1",
                     "deliverable_id": "del-1",
-                    "criterion": "Home, Menu, and Contact pages exist and are accessible via navigation."
+                    "criterion": "Deliverable matches the project description and requirements."
                 },
                 {
                     "id": "crit-2",
-                    "deliverable_id": "del-2",
-                    "criterion": "Menu page lists items with prices and descriptions."
-                },
-                {
-                    "id": "crit-3",
-                    "deliverable_id": "del-3",
-                    "criterion": "Contact form sends a message successfully (shows confirmation)."
-                },
-                {
-                    "id": "crit-4",
                     "deliverable_id": "del-1",
-                    "criterion": "Site works on mobile viewports (responsive design)."
+                    "criterion": "Work is submitted by the agreed deadline."
                 }
             ],
             "amount": float(budget),
-            "deadline": str(deadline or "2026-12-01"),
+            "deadline": str(deadline or "Not specified"),
             "assumptions": [
-                "Client provides bakery logo, photos, and menu content",
-                "Deployment will target standard HTTPS hosting (e.g., Vercel, Netlify)"
+                "Requirements are based on the project description provided by the customer",
+                "Budget and deadline are as agreed in the project creation"
             ],
             "ai_mode": "mock"
         }
