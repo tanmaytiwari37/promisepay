@@ -63,3 +63,18 @@ class DashboardSummary(BaseModel):
     total_projects: int
     status_counts: Dict[str, int]
 
+
+class ApprovalSummary(BaseModel):
+    project_id: int
+    project_title: str
+    approval_type: str
+    customer_approved: bool
+    freelancer_approved: bool
+    pending_from: Optional[str]  # "customer" | "freelancer" | "both" | None
+    overall_status: str  # "approved" | "pending"
+    customer_approved_at: Optional[datetime]
+    freelancer_approved_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+

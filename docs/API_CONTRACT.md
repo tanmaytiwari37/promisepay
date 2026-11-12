@@ -436,3 +436,24 @@ Complete REST API specification with authentication requirements and example req
   }
 }
 ```
+
+### `GET /dashboard/pending-approvals`
+- **Auth**: Bearer Token
+- **Query Params**: `status=pending|approved` (optional)
+- **Response `200 OK`**:
+```json
+[
+  {
+    "project_id": 10,
+    "project_title": "Mobile App Redesign",
+    "approval_type": "agreement",
+    "customer_approved": true,
+    "freelancer_approved": false,
+    "pending_from": "freelancer",
+    "overall_status": "pending",
+    "customer_approved_at": "2026-11-11T12:10:00",
+    "freelancer_approved_at": null
+  }
+]
+```
+- **Notes**: Returns flat array for AG Grid binding. Only projects where the user is customer or freelancer. `pending_from` values: `"customer"`, `"freelancer"`, `"both"`, or `null` (fully approved).

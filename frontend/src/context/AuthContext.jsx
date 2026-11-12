@@ -48,13 +48,19 @@ export function AuthProvider({ children }) {
     return login(email, password);
   };
 
+  // For Google login: store token and fetch user profile
+  const loginWithToken = async (accessToken) => {
+    localStorage.setItem('token', accessToken);
+    await loadUser();
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

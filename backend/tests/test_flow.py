@@ -1040,3 +1040,230 @@ def test_google_login_requires_verified_email(client, monkeypatch):
     res = client.post("/auth/google", json={"id_token": "any", "role": "customer"})
     assert res.status_code == 400
     assert "verified email" in res.json()["detail"].lower()
+
+
+# Dashboard Pending Approvals Tests
+
+def test_dashboard_pending_approvals_fully_approved(client):
+    """Test pending-approvals returns approved when both parties approved"""
+    uid = uuid.uuid4().hex[:8]
+    c_email = f"c_{uid}@example.com"
+    f_email = f"f_{uid}@example.com"
+
+    client.post("/auth/register", json={"email": c_email, "password": "pw", "name": "C", "role": "customer"})
+    client.post("/auth/register", json={"email": f_email, "password": "pw", "name": "F", "role": "freelancer"})
+
+    c_token = client.post("/auth/login", json={"email": c_email, "password": "pw"}).json()["access_token"]
+    f_token = client.post("/auth/login", json={"email": f_email, "password": "pw"}).json()["access_token"]
+    c_headers = {"Authorization": f"Bearer {c_token}"}
+    f_headers = {"Authorization": f"Bearer {f_token}"}
+
+    p_res = client.post("/projects", json={"title": "Test Project", "budget": 100}, headers=c_headers)
+    pid = p_res.json()["id"]
+
+    client.post(f"/projects/{pid}/assign-freelancer", json={"email": f_email}, headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/generate", headers=c_headers)
+    client.post(f"/projects/{pid}/submit-for-approval", headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/approve", headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/approve", headers=f_headers)
+
+    # Check from customer perspective
+    res = client.get("/dashboard/pending-approvals", headers=c_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 1
+    item = data[0]
+    assert item["project_id"] == pid
+    # Title is updated by AI agreement generation
+    assert item["approval_type"] == "agreement"
+    assert item["customer_approved"] is True
+    assert item["freelancer_approved"] is True
+    assert item["pending_from"] is None
+    assert item["overall_status"] == "approved"
+    assert item["customer_approved_at"] is not None
+    assert item["freelancer_approved_at"] is not None
+
+
+def test_dashboard_pending_approvals_only_customer_approved(client):
+    """Test pending-approvals when only customer approved"""
+    uid = uuid.uuid4().hex[:8]
+    c_email = f"c_{uid}@example.com"
+    f_email = f"f_{uid}@example.com"
+
+    client.post("/auth/register", json={"email": c_email, "password": "pw", "name": "C", "role": "customer"})
+    client.post("/auth/register", json={"email": f_email, "password": "pw", "name": "F", "role": "freelancer"})
+
+    c_token = client.post("/auth/login", json={"email": c_email, "password": "pw"}).json()["access_token"]
+    f_token = client.post("/auth/login", json={"email": f_email, "password": "pw"}).json()["access_token"]
+    c_headers = {"Authorization": f"Bearer {c_token}"}
+    f_headers = {"Authorization": f"Bearer {f_token}"}
+
+    p_res = client.post("/projects", json={"title": "Test Project", "budget": 100}, headers=c_headers)
+    pid = p_res.json()["id"]
+
+    client.post(f"/projects/{pid}/assign-freelancer", json={"email": f_email}, headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/generate", headers=c_headers)
+    client.post(f"/projects/{pid}/submit-for-approval", headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/approve", headers=c_headers)
+    # Freelancer hasn't approved yet
+
+    res = client.get("/dashboard/pending-approvals", headers=c_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 1
+    item = data[0]
+    assert item["customer_approved"] is True
+    assert item["freelancer_approved"] is False
+    assert item["pending_from"] == "freelancer"
+    assert item["overall_status"] == "pending"
+    assert item["customer_approved_at"] is not None
+    assert item["freelancer_approved_at"] is None
+
+
+def test_dashboard_pending_approvals_only_freelancer_approved(client):
+    """Test pending-approvals when only freelancer approved"""
+    uid = uuid.uuid4().hex[:8]
+    c_email = f"c_{uid}@example.com"
+    f_email = f"f_{uid}@example.com"
+
+    client.post("/auth/register", json={"email": c_email, "password": "pw", "name": "C", "role": "customer"})
+    client.post("/auth/register", json={"email": f_email, "password": "pw", "name": "F", "role": "freelancer"})
+
+    c_token = client.post("/auth/login", json={"email": c_email, "password": "pw"}).json()["access_token"]
+    f_token = client.post("/auth/login", json={"email": f_email, "password": "pw"}).json()["access_token"]
+    c_headers = {"Authorization": f"Bearer {c_token}"}
+    f_headers = {"Authorization": f"Bearer {f_token}"}
+
+    p_res = client.post("/projects", json={"title": "Test Project", "budget": 100}, headers=c_headers)
+    pid = p_res.json()["id"]
+
+    client.post(f"/projects/{pid}/assign-freelancer", json={"email": f_email}, headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/generate", headers=c_headers)
+    client.post(f"/projects/{pid}/submit-for-approval", headers=c_headers)
+    # Customer hasn't approved yet
+    client.post(f"/projects/{pid}/agreement/approve", headers=f_headers)
+
+    # Check from freelancer perspective
+    res = client.get("/dashboard/pending-approvals", headers=f_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 1
+    item = data[0]
+    assert item["customer_approved"] is False
+    assert item["freelancer_approved"] is True
+    assert item["pending_from"] == "customer"
+    assert item["overall_status"] == "pending"
+    assert item["customer_approved_at"] is None
+    assert item["freelancer_approved_at"] is not None
+
+
+def test_dashboard_pending_approvals_neither_approved(client):
+    """Test pending-approvals when neither party approved (no approval records)"""
+    uid = uuid.uuid4().hex[:8]
+    c_email = f"c_{uid}@example.com"
+    f_email = f"f_{uid}@example.com"
+
+    client.post("/auth/register", json={"email": c_email, "password": "pw", "name": "C", "role": "customer"})
+    client.post("/auth/register", json={"email": f_email, "password": "pw", "name": "F", "role": "freelancer"})
+
+    c_token = client.post("/auth/login", json={"email": c_email, "password": "pw"}).json()["access_token"]
+    c_headers = {"Authorization": f"Bearer {c_token}"}
+
+    p_res = client.post("/projects", json={"title": "Test Project", "budget": 100}, headers=c_headers)
+    pid = p_res.json()["id"]
+
+    client.post(f"/projects/{pid}/assign-freelancer", json={"email": f_email}, headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/generate", headers=c_headers)
+    # Not submitted for approval yet, no approvals
+
+    res = client.get("/dashboard/pending-approvals", headers=c_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 1
+    item = data[0]
+    assert item["customer_approved"] is False
+    assert item["freelancer_approved"] is False
+    assert item["pending_from"] == "both"
+    assert item["overall_status"] == "pending"
+    assert item["customer_approved_at"] is None
+    assert item["freelancer_approved_at"] is None
+
+
+def test_dashboard_pending_approvals_other_user_forbidden(client):
+    """Test that a non-participant cannot see project approvals"""
+    uid = uuid.uuid4().hex[:8]
+    c_email = f"c_{uid}@example.com"
+    f_email = f"f_{uid}@example.com"
+    outsider_email = f"outsider_{uid}@example.com"
+
+    client.post("/auth/register", json={"email": c_email, "password": "pw", "name": "C", "role": "customer"})
+    client.post("/auth/register", json={"email": f_email, "password": "pw", "name": "F", "role": "freelancer"})
+    client.post("/auth/register", json={"email": outsider_email, "password": "pw", "name": "Outsider", "role": "customer"})
+
+    c_token = client.post("/auth/login", json={"email": c_email, "password": "pw"}).json()["access_token"]
+    outsider_token = client.post("/auth/login", json={"email": outsider_email, "password": "pw"}).json()["access_token"]
+    c_headers = {"Authorization": f"Bearer {c_token}"}
+    outsider_headers = {"Authorization": f"Bearer {outsider_token}"}
+
+    p_res = client.post("/projects", json={"title": "Test Project", "budget": 100}, headers=c_headers)
+    pid = p_res.json()["id"]
+
+    client.post(f"/projects/{pid}/assign-freelancer", json={"email": f_email}, headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/generate", headers=c_headers)
+    client.post(f"/projects/{pid}/submit-for-approval", headers=c_headers)
+    client.post(f"/projects/{pid}/agreement/approve", headers=c_headers)
+
+    # Outsider should not see the project
+    res = client.get("/dashboard/pending-approvals", headers=outsider_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 0
+
+
+def test_dashboard_pending_approvals_status_filter_pending(client):
+    """Test status=pending filter"""
+    uid = uuid.uuid4().hex[:8]
+    c_email = f"c_{uid}@example.com"
+    f_email = f"f_{uid}@example.com"
+
+    client.post("/auth/register", json={"email": c_email, "password": "pw", "name": "C", "role": "customer"})
+    client.post("/auth/register", json={"email": f_email, "password": "pw", "name": "F", "role": "freelancer"})
+
+    c_token = client.post("/auth/login", json={"email": c_email, "password": "pw"}).json()["access_token"]
+    f_token = client.post("/auth/login", json={"email": f_email, "password": "pw"}).json()["access_token"]
+    c_headers = {"Authorization": f"Bearer {c_token}"}
+    f_headers = {"Authorization": f"Bearer {f_token}"}
+
+    # Project 1: fully approved
+    p1 = client.post("/projects", json={"title": "Approved Project", "budget": 100}, headers=c_headers)
+    pid1 = p1.json()["id"]
+    client.post(f"/projects/{pid1}/assign-freelancer", json={"email": f_email}, headers=c_headers)
+    client.post(f"/projects/{pid1}/agreement/generate", headers=c_headers)
+    client.post(f"/projects/{pid1}/submit-for-approval", headers=c_headers)
+    client.post(f"/projects/{pid1}/agreement/approve", headers=c_headers)
+    client.post(f"/projects/{pid1}/agreement/approve", headers=f_headers)
+
+    # Project 2: pending (customer only)
+    p2 = client.post("/projects", json={"title": "Pending Project", "budget": 200}, headers=c_headers)
+    pid2 = p2.json()["id"]
+    client.post(f"/projects/{pid2}/assign-freelancer", json={"email": f_email}, headers=c_headers)
+    client.post(f"/projects/{pid2}/agreement/generate", headers=c_headers)
+    client.post(f"/projects/{pid2}/submit-for-approval", headers=c_headers)
+    client.post(f"/projects/{pid2}/agreement/approve", headers=c_headers)
+    # freelancer hasn't approved
+
+    # Filter pending
+    res = client.get("/dashboard/pending-approvals?status=pending", headers=c_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 1
+    assert data[0]["project_id"] == pid2
+    assert data[0]["overall_status"] == "pending"
+
+    # Filter approved
+    res = client.get("/dashboard/pending-approvals?status=approved", headers=c_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 1
+    assert data[0]["project_id"] == pid1
+    assert data[0]["overall_status"] == "approved"

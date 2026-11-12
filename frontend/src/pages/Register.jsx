@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import GoogleAuth from '../components/GoogleAuth';
 
 const inputStyle = {
   background: 'rgba(19,34,54,0.8)',
@@ -163,6 +164,19 @@ export default function Register() {
               ) : 'Create Account'}
             </button>
           </form>
+
+          {/* Google Sign In */}
+          <div className="my-6">
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t" style={{ borderColor: 'rgba(148,163,184,0.12)' }} />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-primary-bg/80 text-muted-text" style={{ backgroundColor: '#07111f' }}>Or continue with</span>
+              </div>
+            </div>
+            <GoogleAuth role="customer" />
+          </div>
 
           <p className="mt-6 text-center text-xs text-secondary-text">
             Already have an account?{' '}
