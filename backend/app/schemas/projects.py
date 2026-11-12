@@ -21,6 +21,8 @@ class ProjectResponse(BaseModel):
     status: str
     customer_id: int
     freelancer_id: Optional[int]
+    freelancer_email: Optional[str] = None
+    freelancer_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

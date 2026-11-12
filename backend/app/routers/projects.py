@@ -66,13 +66,27 @@ def list_projects(
     projects = db.query(Project).filter(
         (Project.customer_id == current_user.id) | (Project.freelancer_id == current_user.id)
     ).order_by(Project.created_at.desc()).all()
+
+    # Add freelancer info to each project
+    for proj in projects:
+        if proj.freelancer_id:
+            freelancer = db.query(User).filter(User.id == proj.freelancer_id).first()
+            if freelancer:
+                proj.freelancer_email = freelancer.email
+                proj.freelancer_name = freelancer.full_name
     return projects
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)
 def get_project(
-    project: Project = Depends(get_project_participant)
+    project: Project = Depends(get_project_participant),
+    db: Session = Depends(get_db)
 ):
+    if project.freelancer_id:
+        freelancer = db.query(User).filter(User.id == project.freelancer_id).first()
+        if freelancer:
+            project.freelancer_email = freelancer.email
+            project.freelancer_name = freelancer.full_name
     return project
 
 

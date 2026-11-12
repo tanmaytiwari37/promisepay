@@ -228,6 +228,14 @@ export default function ProjectDetail() {
             </button>
           )}
 
+          {/* Freelancer: Approve Agreement */}
+          {isFreelancer && status === 'PENDING_APPROVAL' && (
+            <button onClick={() => doAction(() => approveAgreement(projectId), 'Agreement approved!')} disabled={actionLoading} style={C.btnSuccess}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {actionLoading ? 'Approving...' : 'Approve Agreement'}
+            </button>
+          )}
+
           {/* Customer: Authorize Payment */}
           {isCustomer && status === 'AGREED' && (
             <button
