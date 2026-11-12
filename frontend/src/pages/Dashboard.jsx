@@ -1,21 +1,8 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { AgGridReact } from 'ag-grid-react';
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { useAuth } from '../context/AuthContext';
-import {
-  fetchProjects,
-  fetchDashboardSummary,
-  fetchPendingApprovals,
-  fetchPayments,
-  fetchAgreement,
-  fetchReports,
-} from '../api/services';
+import { fetchProjects, fetchDashboardSummary } from '../api/services';
 import StatusBadge from '../components/ui/StatusBadge';
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 function getProgressFromStatus(status) {
   switch (status?.toUpperCase()) {
@@ -33,118 +20,34 @@ function getProgressFromStatus(status) {
   }
 }
 
-const CARD_BASE = {
+const cardBase = {
   background: 'rgba(15,30,50,0.70)',
   border: '1px solid rgba(148,163,184,0.09)',
   borderRadius: '16px',
   padding: '24px',
 };
 
-const GRID_STYLE = { height: 400, width: '100%', fontFamily: 'Inter, system-ui, sans-serif' };
-
-// Status badge renderer for AG Grid
-function StatusCellRenderer({ value }) {
-  return <StatusBadge status={value} />;
-}
-
-// Currency formatter
-function currencyFormatter(params) {
-  if (params.value == null) return '—';
-  return `$${Number(params.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-// Date formatter
-function dateFormatter(params) {
-  if (!params.value) return '—';
-  const d = new Date(params.value);
-  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
-}
-
-// Verdict badge renderer for deliverables
-function VerdictCellRenderer({ value }) {
-  const config = {
-    completed: { label: 'Completed', dot: '#22c55e', bg: 'rgba(34,197,94,0.12)', text: '#4ade80', border: 'rgba(34,197,94,0.25)' },
-    missing: { label: 'Missing', dot: '#ef4444', bg: 'rgba(239,68,68,0.10)', text: '#f87171', border: 'rgba(239,68,68,0.22)' },
-    uncertain: { label: 'Uncertain', dot: '#f59e0b', bg: 'rgba(245,158,11,0.10)', text: '#fbbf24', border: 'rgba(245,158,11,0.22)' },
-  };
-  const key = (value || '').toLowerCase();
-  const cfg = config[key] || { label: value || '—', dot: '#6b7280', bg: 'rgba(107,114,128,0.10)', text: '#9ca3af', border: 'rgba(107,114,128,0.18)' };
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono whitespace-nowrap"
-      style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}
-    >
-      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: cfg.dot }} />
-      {cfg.label}
-    </span>
-  );
-}
-
-// Payment status badge
-function PaymentStatusCellRenderer({ value }) {
-  const config = {
-    created: { label: 'Created', dot: '#6b7280', bg: 'rgba(107,114,128,0.12)', text: '#9ca3af' },
-    payment_authorized: { label: 'Authorized', dot: '#8b5cf6', bg: 'rgba(139,92,246,0.10)', text: '#a78bfa' },
-    authorized: { label: 'Authorized', dot: '#8b5cf6', bg: 'rgba(139,92,246,0.10)', text: '#a78bfa' },
-    paid: { label: 'Paid', dot: '#10b981', bg: 'rgba(16,185,129,0.12)', text: '#34d399' },
-    cancelled: { label: 'Cancelled', dot: '#6b7280', bg: 'rgba(107,114,128,0.08)', text: '#6b7280' },
-    failed: { label: 'Failed', dot: '#ef4444', bg: 'rgba(239,68,68,0.10)', text: '#f87171' },
-  };
-  const key = (value || '').toLowerCase();
-  const cfg = config[key] || { label: value || '—', dot: '#6b7280', bg: 'rgba(107,114,128,0.10)', text: '#9ca3af' };
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono whitespace-nowrap"
-      style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border || 'rgba(107,114,128,0.18)'}` }}
-    >
-      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: cfg.dot }} />
-      {cfg.label}
-    </span>
-  );
-}
-
-// Approval pending-from badge
-function PendingFromCellRenderer({ value }) {
-  if (!value) return <span className="text-xs text-muted-text">—</span>;
-  const labels = { customer: 'Waiting on Customer', freelancer: 'Waiting on Freelancer', both: 'Waiting on Both' };
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono whitespace-nowrap"
-      style={{ background: 'rgba(245,158,11,0.10)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.22)' }}>
-      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#f59e0b' }} />
-      {labels[value] || value}
-    </span>
-  );
-}
-
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [deliverables, setDeliverables] = useState([]);
-  const [pendingApprovals, setPendingApprovals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('projects');
-  const [searchText, setSearchText] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
 
-  // Load all dashboard data
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       try {
         setLoading(true);
-        setError('');
-        const [projRes, payRes, apprRes] = await Promise.allSettled([
+        const [proj] = await Promise.allSettled([
           fetchProjects(),
-          fetchPayments(),
-          fetchPendingApprovals(),
+          fetchDashboardSummary(),
         ]);
-        if (!mounted) return;
-        if (projRes.status === 'fulfilled') setProjects(projRes.value || []);
-        else setError(projRes.reason?.message || 'Failed to load projects');
-        if (payRes.status === 'fulfilled') setPayments(payRes.value || []);
-        if (apprRes.status === 'fulfilled') setPendingApprovals(apprRes.value || []);
+        if (mounted) {
+          if (proj.status === 'fulfilled') setProjects(proj.value || []);
+          else setError(proj.reason?.message || 'Failed to load projects');
+        }
       } catch (err) {
         if (mounted) setError(err.message || 'An error occurred');
       } finally {
@@ -154,125 +57,6 @@ export default function Dashboard() {
     load();
     return () => { mounted = false; };
   }, []);
-
-  // Build deliverables grid data from projects + agreements + reports
-  useEffect(() => {
-    if (!projects.length) return;
-    let mounted = true;
-    const buildDeliverables = async () => {
-      try {
-        const rows = [];
-        for (const proj of projects) {
-          try {
-            const agreement = await fetchAgreement(proj.id);
-            if (!agreement?.deliverables) continue;
-            const reports = await fetchReports(proj.id).catch(() => []);
-            const latestReport = reports[0];
-            const criteria = agreement.acceptance_criteria || [];
-            const criteriaByDeliverable = {};
-            criteria.forEach(c => {
-              const did = c.deliverable_id || 'general';
-              if (!criteriaByDeliverable[did]) criteriaByDeliverable[did] = [];
-              criteriaByDeliverable[did].push(c);
-            });
-            agreement.deliverables.forEach((del, idx) => {
-              const delCriteria = criteriaByDeliverable[del.id] || criteriaByDeliverable[idx] || criteriaByDeliverable['general'] || [];
-              delCriteria.forEach((crit, ci) => {
-                let verdict = '—';
-                if (latestReport?.result?.criteria) {
-                  const match = latestReport.result.criteria.find(c => c.criterion_id === crit.id || c.criterion === crit.criterion);
-                  if (match) verdict = match.status;
-                }
-                rows.push({
-                  id: `${proj.id}-${del.id || idx}-${crit.id || ci}`,
-                  project_id: proj.id,
-                  project_title: proj.title,
-                  project_status: proj.status,
-                  deliverable_title: del.title,
-                  deliverable_description: del.description,
-                  criterion: crit.criterion,
-                  criterion_id: crit.id,
-                  verdict,
-                  report_id: latestReport?.id,
-                });
-              });
-              // If no criteria for this deliverable, still show it
-              if (delCriteria.length === 0) {
-                rows.push({
-                  id: `${proj.id}-${del.id || idx}-none`,
-                  project_id: proj.id,
-                  project_title: proj.title,
-                  project_status: proj.status,
-                  deliverable_title: del.title,
-                  deliverable_description: del.description,
-                  criterion: '—',
-                  criterion_id: null,
-                  verdict: '—',
-                  report_id: latestReport?.id,
-                });
-              }
-            });
-          } catch {
-            // Project may not have agreement yet, skip
-          }
-        }
-        if (mounted) setDeliverables(rows);
-      } catch (err) {
-        if (mounted) console.error('Failed to build deliverables:', err);
-      }
-    };
-    buildDeliverables();
-    return () => { mounted = false; };
-  }, [projects]);
-
-  // Filter deliverables by search
-  const filteredDeliverables = useMemo(() => {
-    if (!searchText) return deliverables;
-    const q = searchText.toLowerCase();
-    return deliverables.filter(d =>
-      d.project_title?.toLowerCase().includes(q) ||
-      d.deliverable_title?.toLowerCase().includes(q) ||
-      d.criterion?.toLowerCase().includes(q) ||
-      d.verdict?.toLowerCase().includes(q)
-    );
-  }, [deliverables, searchText]);
-
-  // Filter payments by search
-  const filteredPayments = useMemo(() => {
-    if (!searchText) return payments;
-    const q = searchText.toLowerCase();
-    return payments.filter(p =>
-      p.project_title?.toLowerCase().includes(q) ||
-      String(p.amount).includes(q) ||
-      p.status?.toLowerCase().includes(q) ||
-      p.paypal_order_id?.toLowerCase().includes(q) ||
-      p.authorization_id?.toLowerCase().includes(q) ||
-      p.capture_id?.toLowerCase().includes(q)
-    );
-  }, [payments, searchText]);
-
-  // Filter pending approvals by search
-  const filteredApprovals = useMemo(() => {
-    if (!searchText) return pendingApprovals;
-    const q = searchText.toLowerCase();
-    return pendingApprovals.filter(a =>
-      a.project_title?.toLowerCase().includes(q) ||
-      a.pending_from?.toLowerCase().includes(q) ||
-      a.overall_status?.toLowerCase().includes(q)
-    );
-  }, [pendingApprovals, searchText]);
-
-  // Filter projects by search
-  const filteredProjects = useMemo(() => {
-    if (!searchText) return projects;
-    const q = searchText.toLowerCase();
-    return projects.filter(p =>
-      p.title?.toLowerCase().includes(q) ||
-      p.description?.toLowerCase().includes(q) ||
-      p.freelancer_email?.toLowerCase().includes(q) ||
-      p.status?.toLowerCase().includes(q)
-    );
-  }, [projects, searchText]);
 
   const metrics = useMemo(() => {
     const total = projects.length;
@@ -341,107 +125,6 @@ export default function Dashboard() {
     );
   }
 
-  // Column definitions for each grid
-  const projectColDefs = useMemo(() => [
-    { field: 'title', headerName: 'Title', filter: 'agTextColumnFilter', sortable: true, flex: 1, minWidth: 200 },
-    { field: 'freelancer_email', headerName: 'Freelancer', filter: 'agTextColumnFilter', sortable: true, minWidth: 180 },
-    { field: 'budget', headerName: 'Amount', filter: 'agNumberColumnFilter', sortable: true, valueFormatter: currencyFormatter, minWidth: 120 },
-    { field: 'deadline', headerName: 'Deadline', filter: 'agDateColumnFilter', sortable: true, valueFormatter: dateFormatter, minWidth: 130 },
-    { field: 'status', headerName: 'Status', filter: 'agSetColumnFilter', sortable: true, cellRenderer: StatusCellRenderer, minWidth: 150 },
-  ], []);
-
-  const deliverableColDefs = useMemo(() => [
-    { field: 'project_title', headerName: 'Project', filter: 'agTextColumnFilter', sortable: true, flex: 1, minWidth: 180 },
-    { field: 'deliverable_title', headerName: 'Deliverable', filter: 'agTextColumnFilter', sortable: true, flex: 1, minWidth: 180 },
-    { field: 'criterion', headerName: 'Criterion', filter: 'agTextColumnFilter', sortable: true, flex: 1, minWidth: 200 },
-    { field: 'verdict', headerName: 'Verification', filter: 'agSetColumnFilter', sortable: true, cellRenderer: VerdictCellRenderer, minWidth: 150 },
-  ], []);
-
-  const paymentColDefs = useMemo(() => [
-    { field: 'project_title', headerName: 'Project', filter: 'agTextColumnFilter', sortable: true, flex: 1, minWidth: 180 },
-    { field: 'amount', headerName: 'Amount', filter: 'agNumberColumnFilter', sortable: true, valueFormatter: currencyFormatter, minWidth: 120 },
-    { field: 'status', headerName: 'Payment Status', filter: 'agSetColumnFilter', sortable: true, cellRenderer: PaymentStatusCellRenderer, minWidth: 150 },
-    { field: 'paypal_order_id', headerName: 'PayPal Order ID', filter: 'agTextColumnFilter', sortable: true, minWidth: 180 },
-    { field: 'authorization_id', headerName: 'Authorization ID', filter: 'agTextColumnFilter', sortable: true, minWidth: 180 },
-    { field: 'capture_id', headerName: 'Capture ID', filter: 'agTextColumnFilter', sortable: true, minWidth: 180 },
-    { field: 'created_at', headerName: 'Date', filter: 'agDateColumnFilter', sortable: true, valueFormatter: dateFormatter, minWidth: 130 },
-  ], []);
-
-  const approvalColDefs = useMemo(() => [
-    { field: 'project_title', headerName: 'Project', filter: 'agTextColumnFilter', sortable: true, flex: 1, minWidth: 200 },
-    { field: 'approval_type', headerName: 'Type', filter: 'agSetColumnFilter', sortable: true, minWidth: 120 },
-    { field: 'customer_approved', headerName: 'Customer ✓', filter: 'agSetColumnFilter', sortable: true, cellRenderer: ({ value }) => value ? '✓' : '✗', minWidth: 110 },
-    { field: 'freelancer_approved', headerName: 'Freelancer ✓', filter: 'agSetColumnFilter', sortable: true, cellRenderer: ({ value }) => value ? '✓' : '✗', minWidth: 110 },
-    { field: 'pending_from', headerName: 'Waiting On', filter: 'agSetColumnFilter', sortable: true, cellRenderer: PendingFromCellRenderer, minWidth: 160 },
-    { field: 'overall_status', headerName: 'Overall', filter: 'agSetColumnFilter', sortable: true, cellRenderer: ({ value }) => <StatusBadge status={value} />, minWidth: 130 },
-  ], []);
-
-  // Common grid options
-  const gridOptions = {
-    pagination: true,
-    paginationPageSize: 10,
-    paginationPageSizeSelector: [10, 20, 50],
-    defaultColDef: {
-      resizable: true,
-      suppressSizeToFit: true,
-    },
-    rowSelection: 'single',
-    onRowClicked: (params) => {
-      if (params.data?.project_id) {
-        navigate(`/project/${params.data.project_id}`);
-      } else if (params.data?.id) {
-        navigate(`/project/${params.data.id}`);
-      }
-    },
-  };
-
-  // Search input
-  const SearchBox = ({ onChange }) => (
-    <input
-      type="text"
-      placeholder="Quick search…"
-      value={searchText}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full sm:w-64 px-4 py-2.5 rounded-xl text-sm transition-all"
-      style={{
-        background: 'rgba(19,34,54,0.8)',
-        border: '1px solid rgba(148,163,184,0.15)',
-        color: '#f1f5f9',
-        outline: 'none',
-      }}
-      onFocus={(e) => { e.target.style.borderColor = 'rgba(45,212,191,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(45,212,191,0.08)'; }}
-      onBlur={(e) => { e.target.style.borderColor = 'rgba(148,163,184,0.15)'; e.target.style.boxShadow = 'none'; }}
-    />
-  );
-
-  const renderEmpty = (msg) => (
-    <div className="rounded-2xl p-16 flex flex-col items-center justify-center text-center"
-      style={{ background: 'rgba(15,30,50,0.50)', border: '2px dashed rgba(148,163,184,0.12)' }}>
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-        style={{ background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.15)' }}>
-        <svg className="w-7 h-7 text-mint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      </div>
-      <div className="text-primary-text font-bold text-lg mb-1">No data</div>
-      <div className="text-secondary-text text-sm">{msg}</div>
-    </div>
-  );
-
-  const renderGrid = (data, colDefs, emptyMsg) => (
-    <div className="ag-theme-alpine" style={GRID_STYLE}>
-      {data.length === 0 ? (
-        renderEmpty(emptyMsg)
-      ) : (
-        <AgGridReact
-          {...gridOptions}
-          rowData={data}
-          columnDefs={colDefs}
-        />
-      )}
-    </div>
-  );
-
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -471,7 +154,7 @@ export default function Dashboard() {
       {/* Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metricCards.map((m) => (
-          <div key={m.label} style={CARD_BASE} className="hover:border-opacity-20 transition-all group">
+          <div key={m.label} style={cardBase} className="hover:border-opacity-20 transition-all group">
             <div className="flex items-center justify-between mb-4">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
@@ -487,77 +170,198 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Tabs */}
-      <div className="flex p-1 rounded-xl" style={{ background: 'rgba(19,34,54,0.60)', border: '1px solid rgba(148,163,184,0.10)' }}>
-        {[
-          { id: 'projects', label: 'Projects', count: filteredProjects.length },
-          { id: 'deliverables', label: 'Deliverables', count: filteredDeliverables.length },
-          { id: 'payments', label: 'Payments', count: filteredPayments.length },
-          { id: 'approvals', label: 'Approvals', count: filteredApprovals.length },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => { setActiveTab(tab.id); setSearchText(''); }}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
-              activeTab === tab.id
-                ? 'bg-[rgba(45,212,191,0.12)] text-mint border border-[rgba(45,212,191,0.22)]'
-                : 'text-[#4e6580] hover:text-secondary-text'
-            }`}
-          >
-            {tab.label}
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono"
-              style={{
-                background: activeTab === tab.id ? 'rgba(45,212,191,0.18)' : 'rgba(148,163,184,0.12)',
-                color: activeTab === tab.id ? '#2dd4bf' : '#4e6580',
-              }}
-            >
-              {tab.count}
-            </span>
-          </button>
-        ))}
-        <div className="flex-1" />
-        <SearchBox onChange={setSearchText} />
-      </div>
-
-      {/* Tab Panels */}
-      <div className="rounded-2xl" style={{ background: 'rgba(15,30,50,0.70)', border: '1px solid rgba(148,163,184,0.09)' }}>
-        <div className="p-5 border-b" style={{ borderColor: 'rgba(148,163,184,0.09)' }}>
+      {/* Projects section */}
+      <div>
+        <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-black text-primary-text">
-            {activeTab === 'projects' && (user?.role === 'customer' ? 'My Agreements' : 'My Projects')}
-            {activeTab === 'deliverables' && 'Deliverables & Verification'}
-            {activeTab === 'payments' && 'Payment History'}
-            {activeTab === 'approvals' && 'Pending Approvals'}
+            {user?.role === 'customer' ? 'My Agreements' : 'My Projects'}
           </h2>
+          <div className="flex items-center gap-2">
+            {/* View mode toggle */}
+            <div className="flex p-1 rounded-xl" style={{ background: 'rgba(19,34,54,0.60)', border: '1px solid rgba(148,163,184,0.10)' }}>
+              <button
+                onClick={() => setViewMode('grid')}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={viewMode === 'grid'
+                  ? { background: 'rgba(45,212,191,0.12)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.22)' }
+                  : { color: '#4e6580' }}
+              >
+                Grid
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={viewMode === 'table'
+                  ? { background: 'rgba(45,212,191,0.12)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.22)' }
+                  : { color: '#4e6580' }}
+              >
+                Table
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="p-5">
-          {activeTab === 'projects' && renderGrid(filteredProjects, projectColDefs, 'No projects found. Create your first agreement to get started.')}
-          {activeTab === 'deliverables' && renderGrid(filteredDeliverables, deliverableColDefs, 'No deliverables yet. Agreements with criteria will appear here after AI verification runs.')}
-          {activeTab === 'payments' && renderGrid(filteredPayments, paymentColDefs, 'No payments recorded. Authorize a PayPal payment to see history.')}
-          {activeTab === 'approvals' && renderGrid(filteredApprovals, approvalColDefs, 'No pending approvals. All agreements are either approved or not yet submitted.')}
-        </div>
-      </div>
 
-      {/* Create New Agreement Card (only on Projects tab for customers) */}
-      {activeTab === 'projects' && user?.role === 'customer' && (
-        <div
-          onClick={() => navigate('/create-agreement')}
-          className="rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all group min-h-[200px]"
-          style={{ border: '2px dashed rgba(148,163,184,0.12)', background: 'rgba(15,30,50,0.30)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.30)'; e.currentTarget.style.background = 'rgba(45,212,191,0.04)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(148,163,184,0.12)'; e.currentTarget.style.background = 'rgba(15,30,50,0.30)'; }}
-        >
+        {projects.length === 0 ? (
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center text-xl mb-3 transition-all"
-            style={{ background: 'rgba(45,212,191,0.10)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.20)' }}
+            className="rounded-2xl p-16 flex flex-col items-center justify-center text-center"
+            style={{ background: 'rgba(15,30,50,0.50)', border: '2px dashed rgba(148,163,184,0.12)' }}
           >
-            +
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+              style={{ background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.15)' }}>
+              <svg className="w-7 h-7 text-mint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div className="text-primary-text font-bold text-lg mb-1">No agreements yet</div>
+            <div className="text-secondary-text text-sm mb-6">
+              {user?.role === 'customer'
+                ? 'Create your first AI-powered agreement to get started.'
+                : 'You will appear here when a customer assigns you to a project.'}
+            </div>
+            {user?.role === 'customer' && (
+              <Link
+                to="/create-agreement"
+                className="px-6 py-3 rounded-full font-bold text-sm transition-all"
+                style={{ background: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)', color: '#07111f' }}
+              >
+                Create Your First Agreement
+              </Link>
+            )}
           </div>
-          <div className="font-bold text-sm text-secondary-text group-hover:text-mint transition-colors">
-            New Agreement
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {projects.map((proj) => {
+              const progress = getProgressFromStatus(proj.status);
+              return (
+                <div
+                  key={proj.id}
+                  onClick={() => navigate(`/project/${proj.id}`)}
+                  className="rounded-2xl p-5 cursor-pointer transition-all group"
+                  style={{
+                    background: 'rgba(15,30,50,0.70)',
+                    border: '1px solid rgba(148,163,184,0.09)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(45,212,191,0.22)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.30)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(148,163,184,0.09)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm font-mono shrink-0"
+                      style={{ background: 'rgba(45,212,191,0.10)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.18)' }}
+                    >
+                      {proj.title?.[0]?.toUpperCase() || 'P'}
+                    </div>
+                    <StatusBadge status={proj.status} />
+                  </div>
+
+                  <div className="font-bold text-primary-text text-sm mb-1 group-hover:text-mint transition-colors line-clamp-1">
+                    {proj.title}
+                  </div>
+                  <div className="text-xs text-muted-text mb-4 line-clamp-2">{proj.description}</div>
+
+                  <div className="flex items-center justify-between text-xs mb-3" style={{ borderTop: '1px solid rgba(148,163,184,0.08)', paddingTop: '12px' }}>
+                    <span className="text-secondary-text">Escrow</span>
+                    <span className="font-black text-primary-text font-mono">
+                      ${Number(proj.budget).toLocaleString()} <span className="text-muted-text font-normal text-[10px]">{proj.currency || 'USD'}</span>
+                    </span>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-[11px] font-mono mb-1.5">
+                      <span className="text-muted-text">Progress</span>
+                      <span style={{ color: '#2dd4bf' }}>{progress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: '#07111f' }}>
+                      <div
+                        className="h-1.5 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${progress}%`,
+                          background: 'linear-gradient(90deg, #2dd4bf 0%, #22d3ee 100%)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Create card */}
+            {user?.role === 'customer' && (
+              <div
+                onClick={() => navigate('/create-agreement')}
+                className="rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all group min-h-[200px]"
+                style={{ border: '2px dashed rgba(148,163,184,0.12)', background: 'rgba(15,30,50,0.30)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.30)'; e.currentTarget.style.background = 'rgba(45,212,191,0.04)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(148,163,184,0.12)'; e.currentTarget.style.background = 'rgba(15,30,50,0.30)'; }}
+              >
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-xl mb-3 transition-all"
+                  style={{ background: 'rgba(45,212,191,0.10)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.20)' }}
+                >
+                  +
+                </div>
+                <div className="font-bold text-sm text-secondary-text group-hover:text-mint transition-colors">
+                  New Agreement
+                </div>
+                <div className="text-[11px] text-muted-text mt-1 font-mono">AI-Powered & Verified</div>
+              </div>
+            )}
           </div>
-          <div className="text-[11px] text-muted-text mt-1 font-mono">AI-Powered & Verified</div>
-        </div>
-      )}
+        ) : (
+          /* Table view */
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{ background: 'rgba(15,30,50,0.70)', border: '1px solid rgba(148,163,184,0.09)' }}
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr style={{ background: 'rgba(19,34,54,0.60)', borderBottom: '1px solid rgba(148,163,184,0.09)' }}>
+                    {['Agreement Title', 'Status', 'Escrow Value', 'Deadline', ''].map((h) => (
+                      <th key={h} className="py-4 px-6 text-xs font-semibold uppercase tracking-wider font-mono text-muted-text">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {projects.map((proj) => (
+                    <tr
+                      key={proj.id}
+                      onClick={() => navigate(`/project/${proj.id}`)}
+                      className="cursor-pointer transition-colors"
+                      style={{ borderBottom: '1px solid rgba(148,163,184,0.06)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(45,212,191,0.04)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <td className="py-4 px-6">
+                        <div className="font-bold text-primary-text text-sm">{proj.title}</div>
+                        <div className="text-xs text-muted-text truncate max-w-xs">{proj.description}</div>
+                      </td>
+                      <td className="py-4 px-6"><StatusBadge status={proj.status} /></td>
+                      <td className="py-4 px-6 font-mono font-bold text-sm" style={{ color: '#2dd4bf' }}>
+                        ${Number(proj.budget).toLocaleString()}
+                      </td>
+                      <td className="py-4 px-6 text-secondary-text text-xs font-mono">
+                        {proj.deadline ? new Date(proj.deadline).toLocaleDateString() : 'Flexible'}
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <span className="text-xs font-bold text-mint hover:underline">Open →</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

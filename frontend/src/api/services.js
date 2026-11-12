@@ -75,6 +75,3 @@ export const fetchPayments = () => apiClient('/payments');
 
 // ── Dashboard ─────────────────────────────────────────────────
 export const fetchDashboardSummary = () => apiClient('/dashboard/summary');
-
-export const fetchPendingApprovals = (status) =>
-  apiClient(`/dashboard/pending-approvals${status ? `?status=${status}` : ''}`);
