@@ -14,7 +14,7 @@ def test_full_promisepay_demo_flow(client):
     reg_c = client.post("/auth/register", json={
         "email": customer_email,
         "password": "password123",
-        "name": "Flow Customer",
+        "name": "Riya Sharma",
         "role": "customer"
     })
     assert reg_c.status_code == 201
@@ -22,7 +22,7 @@ def test_full_promisepay_demo_flow(client):
     reg_f = client.post("/auth/register", json={
         "email": freelancer_email,
         "password": "password123",
-        "name": "Flow Freelancer",
+        "name": "Arjun Mehta",
         "role": "freelancer"
     })
     assert reg_f.status_code == 201
@@ -40,8 +40,8 @@ def test_full_promisepay_demo_flow(client):
 
     # 2. Customer creates project
     p_res = client.post("/projects", json={
-        "title": "E-Commerce Rebuild",
-        "description": "Full stack checkout and delivery",
+        "title": "Bakery Website",
+        "description": "3-page website for Riya's Bake House (Home, Menu, Contact with form). Mobile responsive.",
         "budget": 1500.0,
         "deadline": "2026-12-31"
     }, headers=c_headers)
@@ -999,7 +999,7 @@ def test_google_login_creates_user_and_returns_jwt(client, monkeypatch):
         if token == "bad":
             return None
         if token == "good":
-            return {"email": "Google.User@example.com", "email_verified": True, "name": "G User"}
+            return {"email": "meera.pillai@example.com", "email_verified": True, "name": "Meera Pillai"}
         return None
 
     monkeypatch.setattr(auth_router, "verify_firebase_token", mock_verify)
@@ -1013,7 +1013,7 @@ def test_google_login_creates_user_and_returns_jwt(client, monkeypatch):
     assert res.status_code == 200
     token = res.json()["access_token"]
     me = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
-    assert me.json()["email"] == "google.user@example.com"
+    assert me.json()["email"] == "meera.pillai@example.com"
     assert me.json()["role"] == "freelancer"
 
     # Second login with same email should return existing user's JWT
@@ -1021,7 +1021,7 @@ def test_google_login_creates_user_and_returns_jwt(client, monkeypatch):
     assert res2.status_code == 200
     token2 = res2.json()["access_token"]
     me2 = client.get("/auth/me", headers={"Authorization": f"Bearer {token2}"})
-    assert me2.json()["email"] == "google.user@example.com"
+    assert me2.json()["email"] == "meera.pillai@example.com"
     # Role should remain as originally set (freelancer)
     assert me2.json()["role"] == "freelancer"
 

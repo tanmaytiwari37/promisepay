@@ -32,6 +32,21 @@ interface RegisterRequest {
   name: string;
   role: "customer" | "freelancer";
 }
+
+// Example:
+const customerRegistration = {
+  email: "riya@sharma.com",
+  password: "securepassword123",
+  name: "Riya Sharma",
+  role: "customer"
+};
+
+const freelancerRegistration = {
+  email: "arjun@mehta.com",
+  password: "securepassword123",
+  name: "Arjun Mehta",
+  role: "freelancer"
+};
 ```
 
 ### Current User
@@ -385,10 +400,10 @@ VITE_API_URL=http://localhost:8000  # or https://promisepay-backend.onrender.com
 
 ## 🧪 Demo Accounts (Pre-Seeded)
 
-| Role | Email | Password |
-|------|-------|----------|
-| Customer | `customer@demo.com` | `demo1234` |
-| Freelancer | `freelancer@demo.com` | `demo1234` |
+| Role | Email | Password | Display Name |
+|------|-------|----------|--------------|
+| Customer | `customer@demo.com` | `demo1234` | Riya Sharma |
+| Freelancer | `freelancer@demo.com` | `demo1234` | Arjun Mehta |
 
 ---
 

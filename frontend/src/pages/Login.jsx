@@ -34,23 +34,15 @@ export default function Login() {
     setLoading(true);
     setError('');
     const creds = role === 'customer'
-      ? { email: 'client@example.com', password: 'securepassword123' }
+      ? { email: 'customer@demo.com', password: 'demo1234' }
       : { email: 'freelancer@demo.com', password: 'demo1234' };
     setEmail(creds.email);
     setPassword(creds.password);
     try {
       await authLogin(creds.email, creds.password);
       navigate('/dashboard');
-    } catch {
-      try {
-        const alt = role === 'customer'
-          ? { email: 'customer@demo.com', password: 'demo1234' }
-          : { email: 'freelancer@demo.com', password: 'demo1234' };
-        await authLogin(alt.email, alt.password);
-        navigate('/dashboard');
-      } catch (innerErr) {
-        setError(innerErr.message || 'Demo login failed — ensure the backend is running.');
-      }
+    } catch (innerErr) {
+      setError(innerErr.message || 'Demo login failed — ensure the backend is running.');
     } finally {
       setLoading(false);
     }
@@ -203,9 +195,9 @@ export default function Login() {
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(148,163,184,0.12)'; }}
             >
               <div className="text-xs font-bold text-primary-text flex items-center gap-1.5 mb-0.5">
-                <span>💼</span> Customer Demo
+                <span>💼</span> Customer Demo (Riya Sharma)
               </div>
-              <div className="text-[11px] text-muted-text font-mono truncate">client@example.com</div>
+              <div className="text-[11px] text-muted-text font-mono truncate">customer@demo.com</div>
             </button>
 
             <button
@@ -218,7 +210,7 @@ export default function Login() {
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(148,163,184,0.12)'; }}
             >
               <div className="text-xs font-bold text-primary-text flex items-center gap-1.5 mb-0.5">
-                <span>💻</span> Freelancer Demo
+                <span>💻</span> Freelancer Demo (Arjun Mehta)
               </div>
               <div className="text-[11px] text-muted-text font-mono truncate">freelancer@demo.com</div>
             </button>

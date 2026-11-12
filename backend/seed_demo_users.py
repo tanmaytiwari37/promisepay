@@ -29,25 +29,25 @@ def seed_demo_users():
             {
                 "email": "customer@demo.com",
                 "password": "demo1234",
-                "name": "Demo Customer",
+                "name": "Riya Sharma",
                 "role": "customer",
             },
             {
                 "email": "freelancer@demo.com",
                 "password": "demo1234",
-                "name": "Demo Freelancer",
+                "name": "Arjun Mehta",
                 "role": "freelancer",
             },
             {
                 "email": "alice@customer.com",
                 "password": "password123",
-                "name": "Alice Customer",
+                "name": "Priya Nair",
                 "role": "customer",
             },
             {
                 "email": "bob@freelancer.com",
                 "password": "password123",
-                "name": "Bob Freelancer",
+                "name": "Karan Singh",
                 "role": "freelancer",
             },
         ]

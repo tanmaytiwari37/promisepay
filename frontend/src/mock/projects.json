@@ -1,27 +1,27 @@
 [
   {
     "id": 1,
-    "title": "E-Commerce Landing Page",
-    "client": "Acme Corp",
-    "freelancer": "Alice Dev",
-    "budget": 1200,
+    "title": "Bakery Website",
+    "client": "Riya's Bake House",
+    "freelancer": "Arjun Mehta",
+    "budget": 200,
     "status": "IN_PROGRESS",
     "deadline": "2026-11-20"
   },
   {
     "id": 2,
-    "title": "Mobile App UI Audit",
-    "client": "Starlight Studio",
-    "freelancer": "Bob Design",
+    "title": "Portfolio Website",
+    "client": "Sneha Reddy",
+    "freelancer": "Priya Nair",
     "budget": 850,
     "status": "PENDING_APPROVAL",
     "deadline": "2026-11-25"
   },
   {
     "id": 3,
-    "title": "PayPal Payment Flow Integration",
-    "client": "FinTech Labs",
-    "freelancer": "Charlie Coder",
+    "title": "E-Commerce Integration",
+    "client": "Rohan Gupta",
+    "freelancer": "Ananya Iyer",
     "budget": 2400,
     "status": "APPROVED",
     "deadline": "2026-11-15"

@@ -37,9 +37,9 @@ Complete REST API specification with authentication requirements and example req
 - **Request Body**:
 ```json
 {
-  "email": "client@example.com",
+  "email": "riya@sharma.com",
   "password": "securepassword123",
-  "name": "Alex Client",
+  "name": "Riya Sharma",
   "role": "customer"
 }
 ```
@@ -47,8 +47,8 @@ Complete REST API specification with authentication requirements and example req
 ```json
 {
   "id": 1,
-  "email": "client@example.com",
-  "full_name": "Alex Client",
+  "email": "riya@sharma.com",
+  "full_name": "Riya Sharma",
   "role": "customer",
   "created_at": "2026-11-11T12:00:00"
 }
@@ -59,7 +59,7 @@ Complete REST API specification with authentication requirements and example req
 - **Request Body**:
 ```json
 {
-  "email": "client@example.com",
+  "email": "riya@sharma.com",
   "password": "securepassword123"
 }
 ```
@@ -77,8 +77,8 @@ Complete REST API specification with authentication requirements and example req
 ```json
 {
   "id": 1,
-  "email": "client@example.com",
-  "full_name": "Alex Client",
+  "email": "riya@sharma.com",
+  "full_name": "Riya Sharma",
   "role": "customer",
   "created_at": "2026-11-11T12:00:00"
 }
@@ -111,22 +111,22 @@ Complete REST API specification with authentication requirements and example req
 - **Request Body**:
 ```json
 {
-  "title": "Mobile App Redesign",
-  "description": "Figma design system and React Native mobile UI",
-  "budget": 1200.0,
+  "title": "Bakery Website",
+  "description": "3-page website for Riya's Bake House (Home, Menu, Contact with form). Mobile responsive.",
+  "budget": 200.0,
   "currency": "USD",
-  "deadline": "2026-12-15"
+  "deadline": "2026-11-19"
 }
 ```
 - **Response `201 Created`**:
 ```json
 {
   "id": 10,
-  "title": "Mobile App Redesign",
-  "description": "Figma design system and React Native mobile UI",
-  "budget": 1200.0,
+  "title": "Bakery Website",
+  "description": "3-page website for Riya's Bake House (Home, Menu, Contact with form). Mobile responsive.",
+  "budget": 200.0,
   "currency": "USD",
-  "deadline": "2026-12-15",
+  "deadline": "2026-11-19",
   "status": "DRAFT",
   "customer_id": 1,
   "freelancer_id": null,
@@ -142,11 +142,11 @@ Complete REST API specification with authentication requirements and example req
 [
   {
     "id": 10,
-    "title": "Mobile App Redesign",
-    "description": "Figma design system and React Native mobile UI",
-    "budget": 1200.0,
+    "title": "Bakery Website",
+    "description": "3-page website for Riya's Bake House (Home, Menu, Contact with form). Mobile responsive.",
+    "budget": 200.0,
     "currency": "USD",
-    "deadline": "2026-12-15",
+    "deadline": "2026-11-19",
     "status": "DRAFT",
     "customer_id": 1,
     "freelancer_id": null,
@@ -168,7 +168,7 @@ Complete REST API specification with authentication requirements and example req
   "email": "freelancer@demo.com"
 }
 ```
-- **Response `200 OK`**: Returns project with `freelancer_id` updated.
+- **Response `200 OK`**: Returns project with `freelancer_id` updated (freelancer: Arjun Mehta).
 
 ### `POST /projects/{project_id}/submit-for-approval`
 - **Auth**: Bearer Token (Customer only)
@@ -184,19 +184,44 @@ Complete REST API specification with authentication requirements and example req
   "deliverables": [
     {
       "id": "del-1",
-      "title": "Design System",
-      "description": "Figma variables and component library"
+      "title": "Home Page",
+      "description": "Hero section with bakery story, featured items, and call-to-action."
+    },
+    {
+      "id": "del-2",
+      "title": "Menu Page",
+      "description": "Lists all bakery items with prices, descriptions, and dietary tags."
+    },
+    {
+      "id": "del-3",
+      "title": "Contact Page with Form",
+      "description": "Contact form that sends messages to the bakery's email."
     }
   ],
   "acceptance_criteria": [
     {
       "id": "crit-1",
       "deliverable_id": "del-1",
-      "criterion": "Tokens exported to iOS and Android design formats"
+      "criterion": "Home, Menu, and Contact pages exist and are accessible via navigation."
+    },
+    {
+      "id": "crit-2",
+      "deliverable_id": "del-2",
+      "criterion": "Menu page lists items with prices and descriptions."
+    },
+    {
+      "id": "crit-3",
+      "deliverable_id": "del-3",
+      "criterion": "Contact form sends a message successfully (shows confirmation)."
+    },
+    {
+      "id": "crit-4",
+      "deliverable_id": "del-1",
+      "criterion": "Site works on mobile viewports (responsive design)."
     }
   ],
-  "amount": 1200.0,
-  "deadline": "2026-12-15",
+  "amount": 200.0,
+  "deadline": "2026-11-19",
   "version": 1,
   "created_at": "2026-11-11T12:05:00",
   "updated_at": "2026-11-11T12:05:00"
@@ -239,25 +264,54 @@ Complete REST API specification with authentication requirements and example req
 - **Response `200 OK`**:
 ```json
 {
-  "title": "E-Commerce Landing Page & API Integration",
-  "summary": "Deliver a high-converting, mobile-responsive landing page...",
+  "title": "Bakery Website",
+  "summary": "Build a 3-page website (Home, Menu, Contact) for Riya's Bake House with a working contact form, within budget of $200.",
   "deliverables": [
     {
       "id": "del-1",
-      "title": "Responsive Frontend Layout",
-      "description": "Cross-browser compatible UI based on specifications."
+      "title": "Home Page",
+      "description": "Hero section with bakery story, featured items, and call-to-action."
+    },
+    {
+      "id": "del-2",
+      "title": "Menu Page",
+      "description": "Lists all bakery items with prices, descriptions, and dietary tags."
+    },
+    {
+      "id": "del-3",
+      "title": "Contact Page with Form",
+      "description": "Contact form that sends messages to the bakery's email."
     }
   ],
   "acceptance_criteria": [
     {
       "id": "crit-1",
       "deliverable_id": "del-1",
-      "criterion": "Passes automated responsive testing on Chrome and Safari viewports."
+      "criterion": "Home, Menu, and Contact pages exist and are accessible via navigation."
+    },
+    {
+      "id": "crit-2",
+      "deliverable_id": "del-2",
+      "criterion": "Menu page lists items with prices and descriptions."
+    },
+    {
+      "id": "crit-3",
+      "deliverable_id": "del-3",
+      "criterion": "Contact form sends a message successfully (shows confirmation)."
+    },
+    {
+      "id": "crit-4",
+      "deliverable_id": "del-1",
+      "criterion": "Site works on mobile viewports (responsive design)."
     }
   ],
-  "amount": 1200.0,
-  "deadline": "2026-12-15",
-  "assumptions": ["Client provides branding assets"]
+  "amount": 200.0,
+  "deadline": "2026-11-19",
+  "assumptions": [
+    "Client provides bakery logo, photos, and menu content",
+    "Deployment will target standard HTTPS hosting (e.g., Vercel, Netlify)"
+  ],
+  "ai_mode": "mock"
 }
 ```
 
@@ -275,13 +329,39 @@ Complete REST API specification with authentication requirements and example req
       {
         "criterion_id": "crit-1",
         "status": "completed",
-        "evidence": "Submission evidence quotes...",
-        "reasoning": "Criterion satisfied by delivered code."
+        "evidence": "Submission includes live URLs: https://riyasbakehouse.vercel.app/, https://riyasbakehouse.vercel.app/menu, https://riyasbakehouse.vercel.app/contact",
+        "reasoning": "All three pages are deployed and accessible via navigation bar. Direct evidence from live site."
+      },
+      {
+        "criterion_id": "crit-2",
+        "status": "completed",
+        "evidence": "Menu page shows 12 items with prices (e.g., 'Chocolate Croissant — $3.50', 'Sourdough Loaf — $6.00') and descriptions.",
+        "reasoning": "Menu page displays items, prices, and descriptions as required. Verified via live URL."
+      },
+      {
+        "criterion_id": "crit-3",
+        "status": "completed",
+        "evidence": "Form submission test: filled Name, Email, Message fields → clicked Send → received 'Message sent successfully' toast notification.",
+        "reasoning": "Contact form functions end-to-end. Submission recorded in Formspree dashboard (screenshot attached)."
+      },
+      {
+        "criterion_id": "crit-4",
+        "status": "uncertain",
+        "evidence": "Submission includes desktop screenshots only. No mobile viewport screenshots or automated test results provided.",
+        "reasoning": "Cannot verify mobile responsiveness without mobile viewport evidence or automated test report. Customer should manually test on mobile device."
       }
     ],
-    "overall_summary": "Initial verification shows deliverables in place.",
-    "improvement_suggestions": ["Include deployment URL"],
-    "limitations": ["Automated check does not execute arbitrary code"]
+    "overall_summary": "Three of four acceptance criteria verified with direct evidence. Mobile responsiveness remains uncertain — no mobile test evidence provided. Customer should test on mobile device before final approval.",
+    "improvement_suggestions": [
+      "Attach mobile viewport screenshots or Lighthouse mobile audit report",
+      "Test contact form on actual mobile device"
+    ],
+    "limitations": [
+      "Automated check does not execute arbitrary code or verify external third-party API credentials live",
+      "Cannot verify visual rendering on real mobile devices without screenshots or test reports",
+      "Customer approval remains required to trigger payment capture"
+    ],
+    "ai_mode": "mock"
   },
   "created_at": "2026-11-11T12:20:00"
 }

@@ -75,16 +75,42 @@ Provide an overall summary, actionable improvement suggestions if any, and limit
     raw_json = await call_llm_json(prompt, system_prompt)
 
     if not raw_json:
-        # Realistic canned fallback for mock mode
+        # Realistic canned fallback for mock mode - Bakery Website project
+        # Most criteria completed, one uncertain (honest AI)
         verified_items = []
         for i, c in enumerate(criteria):
             cid = c.get("id", f"crit-{i+1}")
             if i == 0:
+                # Home, Menu, Contact pages exist
                 verified_items.append({
                     "criterion_id": cid,
                     "status": "completed",
-                    "evidence": f"Submission text confirms: {submission_notes or 'notes verified'}.",
-                    "reasoning": "Direct evidence from submission notes matches criterion."
+                    "evidence": "Submission includes live URLs: https://riyasbakehouse.vercel.app/, https://riyasbakehouse.vercel.app/menu, https://riyasbakehouse.vercel.app/contact",
+                    "reasoning": "All three pages are deployed and accessible via navigation bar. Direct evidence from live site."
+                })
+            elif i == 1:
+                # Menu page lists items with prices
+                verified_items.append({
+                    "criterion_id": cid,
+                    "status": "completed",
+                    "evidence": "Menu page shows 12 items with prices (e.g., 'Chocolate Croissant — $3.50', 'Sourdough Loaf — $6.00') and descriptions.",
+                    "reasoning": "Menu page displays items, prices, and descriptions as required. Verified via live URL."
+                })
+            elif i == 2:
+                # Contact form sends message
+                verified_items.append({
+                    "criterion_id": cid,
+                    "status": "completed",
+                    "evidence": "Form submission test: filled Name, Email, Message fields → clicked Send → received 'Message sent successfully' toast notification.",
+                    "reasoning": "Contact form functions end-to-end. Submission recorded in Formspree dashboard (screenshot attached)."
+                })
+            elif i == 3:
+                # Mobile responsive - uncertain (honest AI)
+                verified_items.append({
+                    "criterion_id": cid,
+                    "status": "uncertain",
+                    "evidence": "Submission includes desktop screenshots only. No mobile viewport screenshots or automated test results provided.",
+                    "reasoning": "Cannot verify mobile responsiveness without mobile viewport evidence or automated test report. Customer should manually test on mobile device."
                 })
             else:
                 verified_items.append({
@@ -103,13 +129,14 @@ Provide an overall summary, actionable improvement suggestions if any, and limit
                     "reasoning": "Work delivered according to agreement terms."
                 }
             ],
-            "overall_summary": "Initial verification shows deliverables largely in place. One or more items require customer review.",
+            "overall_summary": "Three of four acceptance criteria verified with direct evidence. Mobile responsiveness remains uncertain — no mobile test evidence provided. Customer should test on mobile device before final approval.",
             "improvement_suggestions": [
-                "Ensure live staging URL is accessible for visual inspection",
-                "Attach test coverage report for automated backend verification"
+                "Attach mobile viewport screenshots or Lighthouse mobile audit report",
+                "Test contact form on actual mobile device"
             ],
             "limitations": [
                 "Automated check does not execute arbitrary code or verify external third-party API credentials live",
+                "Cannot verify visual rendering on real mobile devices without screenshots or test reports",
                 "Customer approval remains required to trigger payment capture"
             ],
             "ai_mode": "mock"

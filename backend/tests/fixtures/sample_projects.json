@@ -1,22 +1,22 @@
 {
   "sample_projects": [
     {
-      "name": "E-Commerce Landing Page & API Integration",
-      "description": "Build a high-converting landing page for a new product launch with integrated checkout. The page must be mobile-responsive, load in under 2 seconds, and connect to a payment authorization endpoint. Deliverables include: 1) Responsive frontend layout (HTML/CSS/JS) matching Figma design, 2) Payment integration connecting checkout buttons to authorization API, 3) Order confirmation page with transaction details. Acceptance criteria: passes automated responsive testing on Chrome/Safari/mobile viewports; order creation and payment authorization execute with HTTP 200/201 and valid JSON payload; page loads in under 2s on 3G.",
-      "budget": 1500.0,
-      "deadline": "2026-12-15"
+      "name": "Bakery Website",
+      "description": "3-page website for Riya's Bake House (Home, Menu, Contact with working form). Mobile responsive. Built by freelancer Arjun Mehta. Budget: $200, Deadline: 1 week.",
+      "budget": 200.0,
+      "deadline": "2026-11-19"
     },
     {
-      "name": "React Native Mobile App - Task Manager",
-      "description": "Develop a cross-platform task management mobile app using React Native with TypeScript. Features: user authentication (email/password + OAuth), project boards with drag-and-drop tasks, offline-first data sync with local SQLite, push notifications for due dates, dark/light theme. Deliverables: 1) Authenticated app shell with navigation, 2) Project/task CRUD with optimistic UI, 3) Offline sync engine with conflict resolution, 4) Notification service integration. Acceptance criteria: app builds and runs on iOS Simulator and Android Emulator; all CRUD operations work offline and sync when online; push notifications received on both platforms; TypeScript strict mode passes with zero errors.",
-      "budget": 3000.0,
-      "deadline": "2027-01-31"
+      "name": "Portfolio Website",
+      "description": "Personal portfolio website for Sneha Reddy, built by freelancer Priya Nair. Includes About, Projects, and Contact pages. Mobile responsive with dark mode.",
+      "budget": 850.0,
+      "deadline": "2026-11-25"
     },
     {
-      "name": "Python FastAPI Backend - Analytics Dashboard API",
-      "description": "Create a production-ready analytics API for a SaaS dashboard. Stack: FastAPI, PostgreSQL, Redis, Celery. Endpoints: authentication (JWT), event ingestion (high-throughput), aggregation queries (time-series), export (CSV/PDF). Deliverables: 1) Auth module with roles and rate limiting, 2) Event ingestion pipeline handling 10k req/s with batching, 3) Aggregation service with pre-computed rollups, 4) Export jobs with async Celery workers, 5) OpenAPI docs and integration tests. Acceptance criteria: all endpoints return correct schemas per OpenAPI; ingestion handles 10k events/sec with <100ms p99 latency; aggregation queries return in <500ms; export jobs complete within 30s for 100k rows; test coverage >85%; Docker Compose spins up full stack.",
-      "budget": 4500.0,
-      "deadline": "2027-02-28"
+      "name": "E-Commerce Integration",
+      "description": "Payment gateway integration for Rohan Gupta's online store, built by freelancer Ananya Iyer. Includes cart, checkout, and order confirmation.",
+      "budget": 2400.0,
+      "deadline": "2026-11-15"
     }
   ]
 }

@@ -24,39 +24,54 @@ Generate a clear, fair freelance agreement breaking down the description into:
     raw_json = await call_llm_json(prompt, system_prompt)
 
     if not raw_json:
-        # Realistic canned fallback for mock mode or offline demo
+        # Realistic canned fallback for mock mode or offline demo - Bakery Website project
         raw_json = {
-            "title": "E-Commerce Landing Page & API Integration",
-            "summary": f"Deliver a high-converting, mobile-responsive landing page with verified checkout capabilities within budget of ${budget}.",
+            "title": "Bakery Website",
+            "summary": f"Build a 3-page website (Home, Menu, Contact) for Riya's Bake House with a working contact form, within budget of ${budget}.",
             "deliverables": [
                 {
                     "id": "del-1",
-                    "title": "Responsive Frontend Layout",
-                    "description": "Cross-browser compatible user interface based on design specifications."
+                    "title": "Home Page",
+                    "description": "Hero section with bakery story, featured items, and call-to-action."
                 },
                 {
                     "id": "del-2",
-                    "title": "Payment & Order Processing",
-                    "description": "Secure integration connecting checkout buttons to authorization endpoints."
+                    "title": "Menu Page",
+                    "description": "Lists all bakery items with prices, descriptions, and dietary tags."
+                },
+                {
+                    "id": "del-3",
+                    "title": "Contact Page with Form",
+                    "description": "Contact form that sends messages to the bakery's email."
                 }
             ],
             "acceptance_criteria": [
                 {
                     "id": "crit-1",
                     "deliverable_id": "del-1",
-                    "criterion": "Passes automated responsive testing on Chrome, Safari, and mobile viewports."
+                    "criterion": "Home, Menu, and Contact pages exist and are accessible via navigation."
                 },
                 {
                     "id": "crit-2",
                     "deliverable_id": "del-2",
-                    "criterion": "Order creation and payment authorization execute with HTTP 200/201 and valid payload."
+                    "criterion": "Menu page lists items with prices and descriptions."
+                },
+                {
+                    "id": "crit-3",
+                    "deliverable_id": "del-3",
+                    "criterion": "Contact form sends a message successfully (shows confirmation)."
+                },
+                {
+                    "id": "crit-4",
+                    "deliverable_id": "del-1",
+                    "criterion": "Site works on mobile viewports (responsive design)."
                 }
             ],
             "amount": float(budget),
             "deadline": str(deadline or "2026-12-01"),
             "assumptions": [
-                "Client provides necessary branding assets and color palette",
-                "Deployment will target standard HTTPS environments"
+                "Client provides bakery logo, photos, and menu content",
+                "Deployment will target standard HTTPS hosting (e.g., Vercel, Netlify)"
             ],
             "ai_mode": "mock"
         }

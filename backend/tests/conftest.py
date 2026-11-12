@@ -32,8 +32,8 @@ def setup_test_db():
     db = TestSessionLocal()
     from app.models.users import User
     for email, role, name in [
-        ("customer@demo.com", "customer", "Demo Customer"),
-        ("freelancer@demo.com", "freelancer", "Demo Freelancer"),
+        ("customer@demo.com", "customer", "Riya Sharma"),
+        ("freelancer@demo.com", "freelancer", "Arjun Mehta"),
     ]:
         if not db.query(User).filter(User.email == email).first():
             db.add(User(email=email, hashed_password=get_password_hash("demo1234"), full_name=name, role=role))

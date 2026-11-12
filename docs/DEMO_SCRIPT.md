@@ -30,23 +30,23 @@
 > "Customers and freelancers sign up with role-based access. Demo accounts are pre-seeded for instant testing."
 
 ### 0:30–0:55 — Create Project + AI Agreement
-> *Create project: "React Native Task Manager", $3000, 6 weeks → click "Generate Agreement with AI"*
-> "The customer describes the project in plain language. Our provider-agnostic AI (mock/Gemini/NVIDIA NIM) converts it into structured deliverables with verifiable acceptance criteria — no legal expertise needed."
+> *Create project: "Bakery Website", $200, 1 week → click "Generate Agreement with AI"*
+> "The customer (Riya Sharma, owner of Riya's Bake House) describes the project in plain language. Our provider-agnostic AI (mock/Gemini/NVIDIA NIM) converts it into structured deliverables with verifiable acceptance criteria — no legal expertise needed. The AI generates: Home Page, Menu Page, Contact Page with Form, and criteria like 'Site works on mobile'."
 
 ### 0:55–1:15 — Dual Approval + PayPal Order
-> *Show agreement → both Customer and Freelancer click "Approve" → status becomes AGREED → Customer clicks "Create PayPal Order"*
+> *Show agreement → both Customer (Riya) and Freelancer (Arjun Mehta) click "Approve" → status becomes AGREED → Customer clicks "Create PayPal Order"*
 > "Both parties must approve. Once agreed, the customer creates a PayPal Order with intent **AUTHORIZE** — this reserves funds but doesn't charge yet. Idempotency keys prevent duplicate orders."
 
 ### 1:15–1:35 — Authorize + Freelancer Work
-> *Customer clicks "Authorize Payment" → project moves to IN_PROGRESS → switch to Freelancer view → upload work file + notes → submit*
-> "Authorization moves the project to IN_PROGRESS. The freelancer uploads deliverables with evidence. File uploads are sanitized and size-limited for security."
+> *Customer clicks "Authorize Payment" → project moves to IN_PROGRESS → switch to Freelancer view (Arjun) → upload work file + notes → submit*
+> "Authorization moves the project to IN_PROGRESS. The freelancer (Arjun) uploads deliverables with evidence — live URLs and screenshots. File uploads are sanitized and size-limited for security."
 
 ### 1:35–1:55 — AI Verification Report
 > *Customer clicks "Run AI Verification" → show report with completed/missing/uncertain per criterion, evidence quotes, limitations*
-> "The AI verifies each acceptance criterion against the submitted evidence. It's conservative: 'completed' only with direct quotes, 'uncertain' when evidence is partial. **Crucially**, limitations are disclosed — AI cannot execute code or verify external APIs. The `ai_mode` field shows which provider was used."
+> "The AI verifies each acceptance criterion against the submitted evidence. It's conservative: 'completed' only with direct quotes, 'uncertain' when evidence is partial. Here, 3 criteria are completed (pages exist, menu has prices, contact form works), but mobile responsiveness is 'uncertain' because no mobile test evidence was provided. **Crucially**, limitations are disclosed — AI cannot execute code or verify external APIs. The `ai_mode` field shows which provider was used."
 
 ### 1:55–2:10 — Customer Review + Capture
-> *Customer reviews report → clicks "Approve Delivery" → status becomes APPROVED → clicks "Capture Payment" → shows PAID status*
+> *Customer (Riya) reviews report → clicks "Approve Delivery" → status becomes APPROVED → clicks "Capture Payment" → shows PAID status*
 > "**Only the customer's approval triggers capture**. The authorized payment is captured via PayPal. Duplicate capture requests are idempotent — they return the stored capture without calling PayPal again."
 
 ### 2:10–2:20 — Dashboard + Status
@@ -79,10 +79,10 @@
 
 ### Sample Project for Demo
 ```
-Title: React Native Task Manager
-Description: Cross-platform task management mobile app using React Native with TypeScript. Features: user authentication (email/password + OAuth), project boards with drag-and-drop tasks, offline-first data sync with local SQLite, push notifications for due dates, dark/light theme.
-Budget: 3000
-Deadline: 2027-01-31
+Title: Bakery Website
+Description: 3-page website for Riya's Bake House (Home, Menu, Contact with working form). Mobile responsive. Built by freelancer Arjun Mehta.
+Budget: 200
+Deadline: 2026-11-19 (one week from creation)
 ```
 
 ---

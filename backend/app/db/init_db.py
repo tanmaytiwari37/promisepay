@@ -14,7 +14,7 @@ def init_db():
             customer = User(
                 email="customer@demo.com",
                 hashed_password=get_password_hash("demo1234"),
-                full_name="Demo Customer",
+                full_name="Riya Sharma",
                 role="customer"
             )
             db.add(customer)
@@ -24,7 +24,7 @@ def init_db():
             freelancer = User(
                 email="freelancer@demo.com",
                 hashed_password=get_password_hash("demo1234"),
-                full_name="Demo Freelancer",
+                full_name="Arjun Mehta",
                 role="freelancer"
             )
             db.add(freelancer)
