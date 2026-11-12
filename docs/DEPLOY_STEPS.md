@@ -58,7 +58,7 @@ If not using Blueprint, create services manually:
 |----------|-------|-------|
 | `DATABASE_URL` | *Auto-linked from DB* | Render injects `postgresql://user:pass@host/db` |
 | `JWT_SECRET` | **Generate strong secret** | `openssl rand -hex 32` |
-| `FRONTEND_URL` | `https://promisepay-frontend.onrender.com` | Your frontend URL |
+| `FRONTEND_URLS` | `https://your-frontend.onrender.com,https://your-frontend.vercel.app` | Comma-separated list of allowed frontend origins (CORS + PayPal return/cancel URLs) |
 | `PAYPAL_MODE` | `sandbox` | Use `sandbox` for testing |
 | `PAYPAL_CLIENT_ID` | *From PayPal Developer* | Sandbox App credentials |
 | `PAYPAL_CLIENT_SECRET` | *From PayPal Developer* | Sandbox App credentials |
@@ -79,21 +79,45 @@ If not using Blueprint, create services manually:
 
 ---
 
-## 3. PayPal Sandbox Setup
+## 3. Firebase Setup (for Google Sign-In)
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Create a project (or use existing)
+3. Enable **Authentication** → **Sign-in method** → **Google**
+4. In **Authentication** → **Settings** → **Authorized domains**, add your frontend domains:
+   - `localhost` (for local dev)
+   - `your-frontend.onrender.com`
+   - `your-frontend.vercel.app`
+   - Any custom domains
+5. In **Project Settings** → **General**, copy the **Project ID**
+6. In Render → Backend service → Environment → Add:
+   - `FIREBASE_PROJECT_ID=<your-project-id>`
+
+> **Important**: Firebase Google Sign-In only works on domains listed in **Authorized domains**. Add all production/staging URLs there.
+
+---
+
+## 4. PayPal Sandbox Setup
 
 1. Go to [PayPal Developer Dashboard](https://developer.paypal.com/)
 2. Create a **Sandbox App** (or use existing)
 3. Copy **Client ID** and **Client Secret**
-4. In Render → Backend service → Environment → Add:
+4. **Create a Sandbox Buyer Account** for testing payments:
+   - In Developer Dashboard → **Sandbox** → **Accounts**
+   - Click **Create Account** → **Personal (Buyer)**
+   - Choose country (e.g., United States)
+   - Copy the generated email and password
+   - Use this account to log in on the PayPal approval page during testing
+5. In Render → Backend service → Environment → Add:
    - `PAYPAL_CLIENT_ID`
    - `PAYPAL_CLIENT_SECRET`
-5. Set `PAYPAL_MODE=sandbox` and `PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com`
+6. Set `PAYPAL_MODE=sandbox` and `PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com`
 
 > **Important**: This integration uses **PayPal Sandbox only**. All transactions are TEST transactions. Do NOT use live credentials.
 
 ---
 
-## 4. Database Migrations
+## 5. Database Migrations
 
 The app uses SQLAlchemy `create_all()` on startup (`init_db()`). For production:
 
@@ -115,7 +139,7 @@ The app uses SQLAlchemy `create_all()` on startup (`init_db()`). For production:
 
 ---
 
-## 5. File Uploads on Render
+## 6. File Uploads on Render
 
 - Render's filesystem is **ephemeral** (cleared on deploy)
 - For persistent uploads, use:
@@ -129,7 +153,7 @@ The app uses SQLAlchemy `create_all()` on startup (`init_db()`). For production:
 
 ---
 
-## 6. Health Checks
+## 7. Health Checks
 
 - Backend: `GET /health` → `{"status": "OK", "app": "PromisePay API"}`
 - Render uses this for zero-downtime deploys
@@ -137,7 +161,7 @@ The app uses SQLAlchemy `create_all()` on startup (`init_db()`). For production:
 
 ---
 
-## 7. Custom Domains (Optional)
+## 8. Custom Domains (Optional)
 
 1. In Render → Service → Settings → Custom Domains
 2. Add domain (e.g., `api.promisepay.dev`)
@@ -146,7 +170,7 @@ The app uses SQLAlchemy `create_all()` on startup (`init_db()`). For production:
 
 ---
 
-## 8. Verification Checklist
+## 9. Verification Checklist
 
 After deploy, verify:
 
@@ -162,7 +186,7 @@ After deploy, verify:
 
 ---
 
-## 9. Local Development with Production Config
+## 10. Local Development with Production Config
 
 ```bash
 # Backend
@@ -179,20 +203,20 @@ npm run dev
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
 | `DATABASE_URL` not set | Link PostgreSQL in Render service settings |
 | JWT_SECRET warning | Set strong secret in environment |
-| CORS errors | Ensure `FRONTEND_URL` matches exactly (no trailing slash) |
+| CORS errors | Ensure `FRONTEND_URLS` includes your frontend origin (comma-separated, no trailing slashes) |
 | PayPal 401/403 | Verify Client ID/Secret are for Sandbox, not Live |
 | File upload fails | Check `UPLOAD_DIR` exists and is writable; add Render Disk |
 | AI returns mock data | Set `LLM_PROVIDER` and `LLM_API_KEY` for real AI |
 
 ---
 
-## 11. Cost Estimate (Render Free Tier)
+## 12. Cost Estimate (Render Free Tier)
 
 | Resource | Cost |
 |----------|------|
@@ -205,7 +229,7 @@ npm run dev
 
 ---
 
-## 12. Security Notes for Production
+## 13. Security Notes for Production
 
 - [ ] Use strong `JWT_SECRET` (32+ bytes)
 - [ ] Enable HTTPS only (Render provides automatically)
