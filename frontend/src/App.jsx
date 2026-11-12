@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardLayout from './components/layout/DashboardLayout';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 
 // Pages
 import Landing from './pages/Landing';
@@ -42,7 +43,31 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
+        <ErrorBoundary
+          fallback={(err, reset) => (
+            <div className="min-h-screen bg-primary-bg flex items-center justify-center p-4">
+              <div className="max-w-md w-full text-center space-y-4" style={{ background: 'rgba(15,30,50,0.80)', border: '1px solid rgba(148,163,184,0.10)', borderRadius: '20px', padding: '40px' }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                  style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.20)', color: '#f87171' }}>
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-black text-primary-text">Application Error</h2>
+                <p className="text-secondary-text">Something went wrong. The error has been logged.</p>
+                <details className="text-left text-xs font-mono p-4" style={{ background: 'rgba(10,22,40,0.60)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: '10px', color: '#64748b', maxHeight: '200px', overflow: 'auto' }}>
+                  <summary className="cursor-pointer mb-2">Error details</summary>
+                  <pre className="whitespace-pre-wrap">{err?.message}</pre>
+                </details>
+                <button onClick={reset} className="px-6 py-2.5 rounded-xl font-bold text-sm transition-all w-full"
+                  style={{ background: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)', color: '#07111f' }}>
+                  Reload App
+                </button>
+              </div>
+            </div>
+          )}
+        >
+          <Routes>
           {/* Public routes */}
           <Route path="/" element={<RedirectIfAuth><Landing /></RedirectIfAuth>} />
           <Route path="/login" element={<RedirectIfAuth><Login /></RedirectIfAuth>} />
@@ -68,6 +93,7 @@ export default function App() {
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </BrowserRouter>
     </AuthProvider>
   );
