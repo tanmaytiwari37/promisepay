@@ -170,7 +170,7 @@ export default function ProjectDetail() {
       {/* Project Info Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: 'Escrow Amount', value: `$${Number(project?.budget || 0).toLocaleString()} ${project?.currency || 'USD'}`, accent: '#2dd4bf' },
+          { label: 'Payment Amount', value: `$${Number(project?.budget || 0).toLocaleString()} ${project?.currency || 'USD'}`, accent: '#2dd4bf' },
           { label: 'Deadline', value: project?.deadline ? new Date(project.deadline).toLocaleDateString() : 'Flexible', accent: '#f59e0b' },
           { label: 'Freelancer', value: project?.freelancer_email || project?.freelancer?.email || 'Not assigned', accent: '#8b5cf6' },
         ].map((m) => (

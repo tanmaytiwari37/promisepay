@@ -53,7 +53,7 @@ export default function Landing() {
           <div className="lg:col-span-6 space-y-8 z-10">
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-surface border border-border-subtle text-xs font-mono text-mint tracking-wider">
               <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
-              AI-POWERED AGREEMENT & ESCROW PROTOCOL
+              AI-POWERED AGREEMENT & PAYMENT PROTECTION
             </div>
 
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.06] text-primary-text">
@@ -88,7 +88,7 @@ export default function Landing() {
             <div className="flex items-center gap-6 pt-4">
               <div className="glass-card rounded-2xl px-5 py-3.5 border border-border-card">
                 <div className="text-2xl font-black text-primary-text">$1M+</div>
-                <div className="text-[11px] text-secondary-text font-mono uppercase tracking-wider mt-0.5">Secured Escrow</div>
+                <div className="text-[11px] text-secondary-text font-mono uppercase tracking-wider mt-0.5">Payment Protected</div>
               </div>
               <div className="glass-card rounded-2xl px-5 py-3.5 border border-border-card">
                 <div className="text-2xl font-black text-primary-text">100+</div>
@@ -118,7 +118,7 @@ export default function Landing() {
 
                 <div className="space-y-3 mb-5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-secondary-text">Escrow Amount</span>
+                    <span className="text-secondary-text">Payment Amount</span>
                     <span className="font-mono font-black text-primary-text text-base">$12,500</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
@@ -156,7 +156,7 @@ export default function Landing() {
               <div className="absolute -bottom-5 -left-5 glass-card rounded-2xl px-4 py-3 border border-border-card shadow-xl shadow-black/40 flex items-center gap-3 w-52">
                 <div className="w-8 h-8 rounded-xl bg-info/15 border border-info/25 flex items-center justify-center text-info text-sm">🔒</div>
                 <div>
-                  <div className="text-xs font-bold text-primary-text">Escrow Secured</div>
+                  <div className="text-xs font-bold text-primary-text">Payment Protected</div>
                   <div className="text-[10px] text-muted-text font-mono">PayPal Protected</div>
                 </div>
               </div>
@@ -232,7 +232,7 @@ export default function Landing() {
             {[
               { icon: '🧠', title: 'AI Agreement Generator', desc: 'Natural language agreement drafting powered by GPT-4. Define scope, milestones, and verification criteria instantly.' },
               { icon: '🔍', title: 'Deliverable Verification', desc: 'Automated AI audit of submitted work against agreed criteria. Detailed pass/fail report generated for every submission.' },
-              { icon: '🔐', title: 'PayPal Escrow', desc: 'Funds are authorized and held in secure escrow. Payment is only captured after customer final approval.' },
+              { icon: '🔐', title: 'PayPal Payment Protection', desc: 'Funds are authorized and held with payment protection. Payment is only captured after customer final approval.' },
               { icon: '📊', title: 'Real-Time Dashboard', desc: 'Full visibility into all projects, payment status, and verification reports from one unified workspace.' },
               { icon: '⚖️', title: 'Human-Controlled Payments', desc: "AI is advisory only. The customer has the final word on every payment — no autonomous fund releases, ever." },
               { icon: '📁', title: 'File Upload & Audit Trail', desc: 'Secure deliverable upload with permanent audit log. Every file, timestamp, and decision is recorded immutably.' },
@@ -316,7 +316,7 @@ export default function Landing() {
             <span className="text-primary-text font-bold text-sm tracking-tight">PromisePay</span>
           </div>
           <div className="text-muted-text">
-            © 2026 PromisePay. Secured by PayPal Escrow Protocol.
+            © 2026 PromisePay. Secured by PayPal Payment Protection.
           </div>
           <div className="flex items-center gap-6">
             <Link to="/login" className="hover:text-mint transition-colors">Sign In</Link>

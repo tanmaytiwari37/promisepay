@@ -74,7 +74,7 @@ async def create_order(project_id: int, amount: float, currency: str = "USD", id
         "purchase_units": [
             {
                 "reference_id": f"project-{project_id}",
-                "description": f"PromisePay Escrow Agreement Project #{project_id}",
+                "description": f"PromisePay Payment Protection Agreement Project #{project_id}",
                 "amount": {
                     "currency_code": currency,
                     "value": f"{amount:.2f}"
