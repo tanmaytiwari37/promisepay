@@ -13,14 +13,14 @@ export function AuthProvider({ children }) {
       const data = await apiClient('/auth/me');
       setUser(data);
     } catch {
-      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
       setUser(null);
     }
   }, []);
 
   // On mount, restore session if token exists
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       loadUser().finally(() => setLoading(false));
     } else {
@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ email, password }),
     });
     // API returns { access_token, token_type } — store token, then fetch user
-    localStorage.setItem('token', data.access_token);
+    sessionStorage.setItem('token', data.access_token);
     await loadUser();
     return data;
   };
@@ -50,12 +50,12 @@ export function AuthProvider({ children }) {
 
   // For Google login: store token and fetch user profile
   const loginWithToken = async (accessToken) => {
-    localStorage.setItem('token', accessToken);
+    sessionStorage.setItem('token', accessToken);
     await loadUser();
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     setUser(null);
   };
 

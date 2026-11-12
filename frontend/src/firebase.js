@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserSessionPersistence } from 'firebase/auth';
 
 // Firebase config from environment variables
 const firebaseConfig = {
@@ -29,6 +29,8 @@ if (isFirebaseConfigured()) {
     // Avoid re-initializing if already initialized (e.g., during HMR)
     app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
     auth = getAuth(app);
+    // Use session-only persistence so each tab has its own auth state
+    setPersistence(auth, browserSessionPersistence);
   } catch (err) {
     console.error('[Firebase] Initialization failed:', err.message);
     console.warn('[Firebase] Google Sign-In will be disabled. Email/password login still works.');

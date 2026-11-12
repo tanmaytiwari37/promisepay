@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export async function apiClient(endpoint, options = {}) {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
   const isFormData = options.body instanceof FormData;
 
