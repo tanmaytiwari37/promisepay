@@ -15,7 +15,7 @@ import {
 } from '../api/services';
 import StatusBadge from '../components/ui/StatusBadge';
 
-// ── Shared style tokens ──────────────────────────────────────────────
+// Shared style tokens (moved outside component for reuse)
 const C = {
   card: {
     background: 'rgba(15,30,50,0.80)',
@@ -239,12 +239,28 @@ export default function ProjectDetail() {
           {/* Customer: Authorize Payment */}
           {isCustomer && status === 'AGREED' && (
             <button
-              onClick={() => doAction(async () => { await createOrder(projectId); await authorizePayment(projectId); }, 'Payment authorized — project is now IN PROGRESS!')}
+              onClick={async () => {
+                setActionLoading(true);
+                setError('');
+                try {
+                  const order = await createOrder(projectId);
+                  if (order.approval_url) {
+                    // Redirect to PayPal for customer approval
+                    window.location.href = order.approval_url;
+                  } else {
+                    setError('No approval URL returned from PayPal. Try again or check mock mode.');
+                  }
+                } catch (err) {
+                  setError(err.message || 'Failed to create PayPal order');
+                } finally {
+                  setActionLoading(false);
+                }
+              }}
               disabled={actionLoading}
               style={C.btn}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-              {actionLoading ? 'Authorizing...' : 'Authorize PayPal Payment'}
+              {actionLoading ? 'Redirecting...' : 'Authorize PayPal Payment'}
             </button>
           )}
 

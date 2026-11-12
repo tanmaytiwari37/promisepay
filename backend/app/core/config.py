@@ -22,10 +22,24 @@ class Settings(BaseSettings):
     PAYPAL_BASE_URL: str = "https://api-m.sandbox.paypal.com"
 
     FRONTEND_URL: str = "http://localhost:5173"
+    # Comma-separated list of allowed frontend origins for CORS and PayPal return/cancel URLs
+    FRONTEND_URLS: str = ""
     UPLOAD_DIR: str = "uploads"
 
     # Firebase project ID (public value), used to verify Google sign-in tokens
     FIREBASE_PROJECT_ID: Optional[str] = None
+
+    @property
+    def frontend_urls_list(self) -> list[str]:
+        """Return list of allowed frontend origins from FRONTEND_URLS, falling back to FRONTEND_URL."""
+        if self.FRONTEND_URLS:
+            return [u.strip() for u in self.FRONTEND_URLS.split(',') if u.strip()]
+        return [self.FRONTEND_URL]
+
+    @property
+    def primary_frontend_url(self) -> str:
+        """Return the primary frontend URL for PayPal return/cancel URLs."""
+        return self.frontend_urls_list[0]
 
     class Config:
         env_file = ".env"

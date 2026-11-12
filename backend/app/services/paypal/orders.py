@@ -82,8 +82,8 @@ async def create_order(project_id: int, amount: float, currency: str = "USD", id
             }
         ],
         "application_context": {
-            "return_url": f"{settings.FRONTEND_URL}/projects/{project_id}/payment/success",
-            "cancel_url": f"{settings.FRONTEND_URL}/projects/{project_id}/payment/cancel",
+            "return_url": f"{settings.primary_frontend_url}/projects/{project_id}/payment/success",
+            "cancel_url": f"{settings.primary_frontend_url}/projects/{project_id}/payment/cancel",
             "user_action": "CONTINUE"
         }
     }

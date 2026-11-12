@@ -13,6 +13,8 @@ import CreateAgreement from './pages/CreateAgreement';
 import ProjectDetail from './pages/ProjectDetail';
 import SubmitWork from './pages/SubmitWork';
 import VerificationReport from './pages/VerificationReport';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancel from './pages/PaymentCancel';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -81,6 +83,10 @@ export default function App() {
           <Route path="/project/:projectId/submit" element={<RequireAuth><AppLayout><SubmitWork /></AppLayout></RequireAuth>} />
           <Route path="/project/:projectId/verify" element={<RequireAuth><AppLayout><VerificationReport /></AppLayout></RequireAuth>} />
           <Route path="/reports" element={<RequireAuth><AppLayout><Dashboard /></AppLayout></RequireAuth>} />
+
+          {/* PayPal return/cancel routes (no sidebar layout, but require auth) */}
+          <Route path="/projects/:projectId/payment/success" element={<RequireAuth><PaymentSuccess /></RequireAuth>} />
+          <Route path="/projects/:projectId/payment/cancel" element={<RequireAuth><PaymentCancel /></RequireAuth>} />
 
           {/* Legacy routes — redirect */}
           <Route path="/agreement-review" element={<Navigate to="/dashboard" replace />} />
