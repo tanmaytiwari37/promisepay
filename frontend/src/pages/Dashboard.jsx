@@ -359,16 +359,7 @@ export default function Dashboard() {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#2dd4bf', borderTopColor: 'transparent' }} />
-        <span className="text-secondary-text text-sm font-mono">Loading workspace...</span>
-      </div>
-    );
-  }
-
-  // Column definitions
+  // Column definitions (must be before any early return for hooks rules)
   const projectColDefs = useMemo(() => [
     { field: 'title', headerName: 'Title', filter: 'agTextColumnFilter', sortable: true, flex: 1, minWidth: 200 },
     { field: 'freelancer_email', headerName: 'Freelancer', filter: 'agTextColumnFilter', sortable: true, minWidth: 180 },
@@ -402,6 +393,15 @@ export default function Dashboard() {
     { field: 'pending_from', headerName: 'Waiting On', filter: 'agSetColumnFilter', sortable: true, cellRenderer: PendingFromCellRenderer, minWidth: 160 },
     { field: 'overall_status', headerName: 'Overall', filter: 'agSetColumnFilter', sortable: true, cellRenderer: ({ value }) => <StatusBadge status={value} />, minWidth: 130 },
   ], []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#2dd4bf', borderTopColor: 'transparent' }} />
+        <span className="text-secondary-text text-sm font-mono">Loading workspace...</span>
+      </div>
+    );
+  }
 
   // Row click handlers
   const handleProjectRowClick = (params) => {

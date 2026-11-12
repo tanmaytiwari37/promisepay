@@ -20,6 +20,7 @@ export class ErrorBoundary extends React.Component {
       if (this.props.fallback) {
         return this.props.fallback(this.state.error, this.resetErrorBoundary);
       }
+      const isDev = import.meta.env?.DEV === true;
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-8">
           <div className="w-16 h-16 rounded-full flex items-center justify-center"
@@ -31,10 +32,25 @@ export class ErrorBoundary extends React.Component {
           <div className="text-center">
             <h3 className="text-lg font-bold text-primary-text mb-2">Something went wrong</h3>
             <p className="text-secondary-text text-sm mb-4">This component failed to render.</p>
-            <details className="text-left text-xs font-mono" style={{ color: '#64748b', maxWidth: '400px' }}>
-              <summary className="cursor-pointer mb-2">Error details</summary>
-              <pre className="whitespace-pre-wrap">{this.state.error?.message}</pre>
-            </details>
+            {isDev && (
+              <details className="text-left text-xs font-mono mb-4" style={{ color: '#64748b', maxWidth: '600px', textAlign: 'left' }}>
+                <summary className="cursor-pointer mb-2 text-primary-text font-bold">Error Details (Development Mode)</summary>
+                <div className="space-y-3">
+                  <div>
+                    <span className="font-bold">Message:</span>
+                    <pre className="whitespace-pre-wrap mt-1 p-2 rounded" style={{ background: 'rgba(15,30,50,0.5)', border: '1px solid rgba(148,163,184,0.15)', overflow: 'auto' }}>
+                      {this.state.error?.message || 'No error message'}
+                    </pre>
+                  </div>
+                  <div>
+                    <span className="font-bold">Component Stack:</span>
+                    <pre className="whitespace-pre-wrap mt-1 p-2 rounded" style={{ background: 'rgba(15,30,50,0.5)', border: '1px solid rgba(148,163,184,0.15)', overflow: 'auto', maxHeight: '300px' }}>
+                      {this.state.errorInfo?.componentStack || 'No component stack available'}
+                    </pre>
+                  </div>
+                </div>
+              </details>
+            )}
             <button
               onClick={this.resetErrorBoundary}
               className="px-6 py-2.5 rounded-xl font-bold text-sm transition-all"
