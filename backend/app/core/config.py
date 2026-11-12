@@ -11,9 +11,10 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
-    LLM_PROVIDER: str = "mock"
+    LLM_PROVIDER: str = "mock"  # mock | gemini | openai_compatible
     LLM_API_KEY: Optional[str] = None
     LLM_MODEL: str = "gemini-1.5-flash"
+    LLM_BASE_URL: Optional[str] = None  # for openai_compatible (e.g., NVIDIA NIM)
 
     PAYPAL_MODE: str = "mock"
     PAYPAL_CLIENT_ID: Optional[str] = None

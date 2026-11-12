@@ -31,3 +31,9 @@ uploads/
 # Tool & agent caches
 .serena/
 .playwright-mcp/
+
+# Generated/temporary files
+openapi.json
+openapi_to_postman.py
+postman_collection.json
+postman/

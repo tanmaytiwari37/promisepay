@@ -3,6 +3,7 @@ from typing import List, Dict, Any, Optional
 from pypdf import PdfReader
 from app.schemas.ai import VerificationResult, CriterionVerification
 from app.services.ai.llm import call_llm_json
+from app.core.config import settings
 
 
 def extract_evidence_text(file_path: Optional[str], file_type: Optional[str]) -> str:
@@ -54,30 +55,36 @@ Verify the submission against each acceptance criterion.
 For each criterion, determine:
 - criterion_id: matching the provided ID
 - status: exactly one of "completed", "missing", or "uncertain"
-- evidence: direct quote from the text or explicit file reference
+- evidence: direct quote from the text or explicit file reference (e.g., "Line 42: ...", "Page 3: ...", "File: deliverable.txt")
 - reasoning: why this evidence satisfies or fails the criterion. Never claim certainty without direct evidence.
+
+VERIFICATION RULES:
+- A criterion may be "completed" ONLY if there is a direct quoted evidence snippet or explicit file reference.
+- If evidence is partial, indirect, or missing, use "uncertain" or "missing" — never "completed" without proof.
+- Always include limitations: automated check cannot execute code, verify external APIs, or access private credentials.
+- Customer approval remains required to trigger payment capture.
 
 Provide an overall summary, actionable improvement suggestions if any, and limitations of this automated assessment.
 """
     system_prompt = (
         "You are an objective AI delivery auditor. Evaluate evidence strictly against criteria without bias. "
-        "Your role is decision support for the customer. You must never approve payments or make legal guarantees."
+        "Your role is decision support for the customer. You must never approve payments or make legal guarantees. "
+        "Be conservative: prefer 'uncertain' over 'completed' when evidence is not explicit."
     )
 
     raw_json = await call_llm_json(prompt, system_prompt)
 
     if not raw_json:
-        # Realistic canned fallback
+        # Realistic canned fallback for mock mode
         verified_items = []
         for i, c in enumerate(criteria):
             cid = c.get("id", f"crit-{i+1}")
-            # First item completed, others completed or uncertain based on evidence
             if i == 0:
                 verified_items.append({
                     "criterion_id": cid,
                     "status": "completed",
-                    "evidence": f"Submission text and notes confirm matching implementation ({submission_notes or 'notes verified'}).",
-                    "reasoning": "Evidence text contains corresponding deliverables and verified implementation steps."
+                    "evidence": f"Submission text confirms: {submission_notes or 'notes verified'}.",
+                    "reasoning": "Direct evidence from submission notes matches criterion."
                 })
             else:
                 verified_items.append({
@@ -104,7 +111,10 @@ Provide an overall summary, actionable improvement suggestions if any, and limit
             "limitations": [
                 "Automated check does not execute arbitrary code or verify external third-party API credentials live",
                 "Customer approval remains required to trigger payment capture"
-            ]
+            ],
+            "ai_mode": "mock"
         }
+    elif "ai_mode" not in raw_json:
+        raw_json["ai_mode"] = settings.LLM_PROVIDER
 
     return VerificationResult.model_validate(raw_json)

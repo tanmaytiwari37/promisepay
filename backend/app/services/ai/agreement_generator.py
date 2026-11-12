@@ -1,6 +1,7 @@
 from typing import Optional
 from app.schemas.ai import GeneratedAgreement, DeliverableItem, AcceptanceCriterionItem
 from app.services.ai.llm import call_llm_json
+from app.core.config import settings
 
 
 async def generate_agreement(description: str, budget: float, deadline: str) -> GeneratedAgreement:
@@ -56,7 +57,10 @@ Generate a clear, fair freelance agreement breaking down the description into:
             "assumptions": [
                 "Client provides necessary branding assets and color palette",
                 "Deployment will target standard HTTPS environments"
-            ]
+            ],
+            "ai_mode": "mock"
         }
+    elif "ai_mode" not in raw_json:
+        raw_json["ai_mode"] = settings.LLM_PROVIDER
 
     return GeneratedAgreement.model_validate(raw_json)
