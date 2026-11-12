@@ -176,9 +176,10 @@ async def capture_project_payment(
             detail="Only the customer can capture payments"
         )
 
+    # Lock the payment row for this project to prevent concurrent captures
     payment = db.query(Payment).filter(
         Payment.project_id == project_id
-    ).order_by(Payment.created_at.desc()).first()
+    ).order_by(Payment.created_at.desc()).with_for_update().first()
 
     if not payment or not payment.authorization_id:
         raise HTTPException(

@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from fastapi.responses import FileResponse
@@ -19,9 +20,36 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
 def sanitize_filename(filename: str) -> str:
+    """Sanitize filename to prevent path traversal and unsafe characters."""
+    # Get just the basename, resolve any path components
     base = os.path.basename(filename)
+    # Remove any null bytes
+    base = base.replace("\x00", "")
+    # Replace unsafe characters (keep alphanumeric, dot, dash, underscore)
     safe = re.sub(r"[^\w\.-]", "_", base)
+    # Prevent hidden files and directory traversal attempts
+    if safe.startswith(".") or ".." in safe:
+        safe = "_" + safe.lstrip(".")
+    # Limit length
+    if len(safe) > 255:
+        name, ext = os.path.splitext(safe)
+        safe = name[:255 - len(ext)] + ext
     return safe
+
+
+def validate_file_path(base_dir: str, project_id: int, filename: str) -> str:
+    """Validate that the resolved file path stays within the allowed upload directory."""
+    target_dir = Path(settings.UPLOAD_DIR) / str(project_id)
+    target_dir.mkdir(parents=True, exist_ok=True)
+    dest_path = (target_dir / filename).resolve()
+    base_resolved = target_dir.resolve()
+    # Ensure the destination is within the base directory
+    if not str(dest_path).startswith(str(base_resolved)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path"
+        )
+    return str(dest_path)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -60,9 +88,7 @@ async def submit_work(
             )
 
         safe_name = sanitize_filename(original_name)
-        target_dir = os.path.join(settings.UPLOAD_DIR, str(project_id))
-        os.makedirs(target_dir, exist_ok=True)
-        dest_path = os.path.join(target_dir, safe_name)
+        dest_path = validate_file_path(settings.UPLOAD_DIR, project_id, safe_name)
 
         with open(dest_path, "wb") as f:
             f.write(contents)
